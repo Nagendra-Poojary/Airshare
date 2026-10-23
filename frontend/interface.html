@@ -1,0 +1,844 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AirShare — Enterprise Dual Interface Platform</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- Leaflet GIS CSS & JS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#ECFDF5',
+                            100: '#D1FAE5',
+                            500: '#10B981',
+                            600: '#059669',
+                            700: '#047857',
+                        },
+                        accent: {
+                            blue: '#2563EB',
+                            amber: '#D97706',
+                            rose: '#E11D48',
+                            purple: '#7C3AED',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'Fira Code', 'Menlo', 'Consolas', 'monospace'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:ital,wght@0,400;0,500;0,600;1,400&display=swap');
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #F8FAFC;
+            color: #0F172A;
+            letter-spacing: -0.011em;
+        }
+
+        .font-mono {
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        /* Light Enterprise Custom Scrollbars */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #F1F5F9;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #CBD5E1;
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94A3B8;
+        }
+
+        /* Leaflet Overrides for Crisp Light Mode UI */
+        .leaflet-container {
+            background: #F1F5F9 !important;
+            font-family: 'Inter', sans-serif !important;
+        }
+        .leaflet-popup-content-wrapper {
+            background: #FFFFFF !important;
+            color: #0F172A !important;
+            border: 1px solid #CBD5E1 !important;
+            border-radius: 8px !important;
+            box-shadow: 0 10px 15px -3px rgba(15, 23, 42, 0.08), 0 4px 6px -4px rgba(15, 23, 42, 0.04) !important;
+            padding: 2px !important;
+        }
+        .leaflet-popup-tip {
+            background: #FFFFFF !important;
+            border: 1px solid #CBD5E1 !important;
+        }
+        .leaflet-popup-content {
+            margin: 10px 14px !important;
+            font-size: 11px !important;
+            line-height: 1.5 !important;
+        }
+        .leaflet-control-zoom a {
+            background-color: #FFFFFF !important;
+            color: #334155 !important;
+            border-color: #E2E8F0 !important;
+            border-radius: 6px !important;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05) !important;
+        }
+
+        @keyframes pulse-subtle {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.4; }
+        }
+        .animate-pulse-subtle {
+            animation: pulse-subtle 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+    </style>
+</head>
+<body class="h-screen flex flex-col overflow-hidden text-slate-800 select-none antialiased bg-slate-50">
+
+    <!-- 1. GLOBAL NAVIGATION HEADER WITH LIVE STATE SYNC -->
+    <header class="bg-white border-b border-slate-200 px-5 py-2.5 flex items-center justify-between shrink-0 z-20 shadow-xs">
+        <!-- Brand & Engine Context -->
+        <div class="flex items-center gap-4">
+            <div class="flex items-center gap-2.5">
+                <div class="h-8 w-8 rounded-lg bg-emerald-50 border border-emerald-200 flex items-center justify-center text-emerald-600 font-bold text-sm shadow-xs">
+                    <i class="fa-solid fa-plane-circle-check"></i>
+                </div>
+                <div>
+                    <div class="flex items-center gap-2">
+                        <span class="font-bold text-sm tracking-tight text-slate-900 font-mono">AirShare</span>
+                        <span class="text-[10px] font-mono font-semibold px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-200">
+                            com.ewit.airshare
+                        </span>
+                    </div>
+                    <p class="text-[10px] text-slate-500 flex items-center gap-1.5 font-medium">
+                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse-subtle"></span>
+                        Dual Portal Engine • KIA Bengaluru Hub
+                    </p>
+                </div>
+            </div>
+
+            <div class="h-6 w-px bg-slate-200"></div>
+
+            <!-- INTERFACE MODE SWITCHER -->
+            <div class="flex items-center bg-slate-100 p-1 rounded-lg border border-slate-200 text-xs font-semibold">
+                <button onclick="switchInterface('passenger')" id="tab-passenger" class="px-3 py-1 rounded-md text-slate-900 bg-white border border-slate-200 shadow-xs transition-all flex items-center gap-2">
+                    <i class="fa-solid fa-user-check text-emerald-600 text-[11px]"></i>
+                    <span>Passenger Booking Portal</span>
+                    <span id="badgePassengerStatus" class="w-2 h-2 rounded-full bg-amber-500"></span>
+                </button>
+                <button onclick="switchInterface('driver')" id="tab-driver" class="px-3 py-1 rounded-md text-slate-500 hover:text-slate-800 transition-all flex items-center gap-2">
+                    <i class="fa-solid fa-taxi text-purple-600 text-[11px]"></i>
+                    <span>Driver In-Cab HUD Console</span>
+                    <span id="badgeDriverOffers" class="text-[9px] font-mono font-bold bg-amber-100 text-amber-800 px-1.5 rounded-full">1</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Global Real-Time Sync Indicators -->
+        <div class="flex items-center gap-5 text-xs font-mono">
+            <div class="hidden md:flex items-center gap-4">
+                <div class="flex flex-col text-right">
+                    <span class="text-[9px] text-slate-400 font-medium uppercase tracking-wider">Active Queue</span>
+                    <span id="headerQueueText" class="text-xs font-bold text-slate-800">1 Booking</span>
+                </div>
+                <div class="h-5 w-px bg-slate-200"></div>
+                <div class="flex flex-col text-right">
+                    <span class="text-[9px] text-slate-400 font-medium uppercase tracking-wider">Curbside Sync</span>
+                    <span class="text-xs font-bold text-emerald-600">Zero Idle Wait</span>
+                </div>
+                <div class="h-5 w-px bg-slate-200"></div>
+                <div class="flex flex-col text-right">
+                    <span class="text-[9px] text-slate-400 font-medium uppercase tracking-wider">Avg Savings</span>
+                    <span class="text-xs font-bold text-emerald-600">59% Proportional</span>
+                </div>
+            </div>
+
+            <button onclick="resetDemoState()" class="px-2.5 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 text-xs font-semibold transition-all flex items-center gap-1.5 shadow-xs">
+                <i class="fa-solid fa-rotate-left text-slate-500 text-[10px]"></i>
+                <span>Reset Demo State</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- ========================================================================= -->
+    <!-- INTERFACE 1: PASSENGER BOOKING & CURBSIDE CHECK-IN WEB APP -->
+    <!-- ========================================================================= -->
+    <main id="portal-passenger" class="flex-1 grid grid-cols-12 overflow-hidden bg-slate-100 p-4 gap-4">
+        
+        <!-- LEFT COLUMN: BOOKING & CURBSIDE CHECK-IN FORM (Width: 420px) -->
+        <section class="col-span-12 lg:col-span-5 xl:col-span-4 bg-white border border-slate-200 rounded-2xl shadow-sm flex flex-col justify-between overflow-hidden">
+            <!-- Header -->
+            <div class="p-4 border-b border-slate-200 bg-slate-50 flex justify-between items-center">
+                <div class="flex items-center gap-2">
+                    <span class="h-6 w-6 rounded-md bg-emerald-100 text-emerald-700 flex items-center justify-center text-xs font-bold font-mono">01</span>
+                    <h2 class="text-xs font-bold text-slate-900 uppercase tracking-wide">Terminal Curbside Check-In</h2>
+                </div>
+                <span class="text-[10px] font-mono font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 px-2 py-0.5 rounded">
+                    KIA Bengaluru
+                </span>
+            </div>
+
+            <!-- Form Body -->
+            <div class="p-4 flex-1 overflow-y-auto space-y-4">
+                <form id="passengerBookingForm" onsubmit="submitPassengerBooking(event)" class="space-y-3.5">
+                    
+                    <!-- Airport Location Selection Bar -->
+                    <div>
+                        <label class="block text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-1">
+                            <i class="fa-solid fa-plane text-emerald-600 mr-1"></i> Origin Airport Hub
+                        </label>
+                        <select id="passAirport" onchange="updateAirportHub()" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-1.5 text-xs text-slate-900 font-bold focus:outline-none focus:border-emerald-500">
+                            <option value="KIA|Kempegowda International Airport (KIA Bengaluru)|13.1989|77.7068">Kempegowda Int'l Airport (KIA • Bengaluru)</option>
+                            <option value="BOM|Chhatrapati Shivaji Maharaj Int'l Airport (BOM Mumbai)|19.0896|72.8656">CSM Int'l Airport (BOM • Mumbai)</option>
+                            <option value="DEL|Indira Gandhi International Airport (DEL Delhi)|28.5562|77.1000">Indira Gandhi Int'l Airport (DEL • Delhi)</option>
+                            <option value="HYD|Rajiv Gandhi International Airport (HYD Hyderabad)|17.2403|78.4294">Rajiv Gandhi Int'l Airport (HYD • Hyderabad)</option>
+                            <option value="MAA|Chennai International Airport (MAA Chennai)|12.9941|80.1709">Chennai Int'l Airport (MAA • Chennai)</option>
+                        </select>
+                    </div>
+
+                    <!-- Passenger Info & Flight No -->
+                    <div class="grid grid-cols-2 gap-2.5">
+                        <div>
+                            <label class="block text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-1">Passenger Name</label>
+                            <input type="text" id="passName" value="Ananya Rao" required class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-1.5 text-xs text-slate-900 font-medium focus:outline-none focus:border-emerald-500">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-1">Flight Number</label>
+                            <input type="text" id="passFlight" value="6E-204" required class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-1.5 text-xs text-slate-900 font-mono font-bold uppercase focus:outline-none focus:border-emerald-500">
+                        </div>
+                    </div>
+
+                    <!-- Seats Required & Terminal Gate Selection Grid -->
+                    <div class="grid grid-cols-2 gap-2.5">
+                        <!-- Seat Count Selector -->
+                        <div class="bg-slate-50 rounded-lg p-2 border border-slate-200">
+                            <label class="block text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-1">Seats Required</label>
+                            <div class="flex items-center justify-between bg-white px-2 py-1 rounded border border-slate-200">
+                                <button type="button" onclick="adjustSeats(-1)" class="w-6 h-6 rounded bg-slate-100 text-slate-700 font-bold hover:bg-slate-200 text-xs">-</button>
+                                <span id="passSeatsVal" class="font-mono font-bold text-slate-900 text-xs">1 Seat</span>
+                                <button type="button" onclick="adjustSeats(1)" class="w-6 h-6 rounded bg-slate-100 text-slate-700 font-bold hover:bg-slate-200 text-xs">+</button>
+                            </div>
+                        </div>
+
+                        <!-- Terminal Gate Selection -->
+                        <div>
+                            <label class="block text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-1">Terminal Gate</label>
+                            <select id="passGate" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-2 text-xs text-slate-900 font-medium focus:outline-none focus:border-emerald-500">
+                                <option value="Terminal 1 • Curb Gate 2">Terminal 1 • Gate 2</option>
+                                <option value="Terminal 1 • Curb Gate 4">Terminal 1 • Gate 4</option>
+                                <option value="Terminal 2 • Curb Gate 6">Terminal 2 • Gate 6</option>
+                                <option value="Terminal 2 • Curb Gate 8">Terminal 2 • Gate 8</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Luggage Selector & Automatic Units Calculator -->
+                    <div class="bg-slate-50 rounded-xl p-3 border border-slate-200 space-y-2.5">
+                        <div class="flex justify-between items-center border-b border-slate-200 pb-1.5">
+                            <span class="text-xs font-bold text-slate-800">Luggage Breakdown</span>
+                            <span id="passUnitsDisplay" class="text-xs font-mono font-bold text-emerald-700 bg-white px-2 py-0.5 rounded border border-slate-200">
+                                3 Volume Units (3u)
+                            </span>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-2 text-xs">
+                            <div class="bg-white p-2 rounded-lg border border-slate-200 space-y-1">
+                                <label class="block text-[10px] text-slate-500 font-medium">Cabin Bags (1u each)</label>
+                                <div class="flex items-center justify-between">
+                                    <button type="button" onclick="adjustLuggage('cabin', -1)" class="w-6 h-6 rounded bg-slate-100 text-slate-700 font-bold hover:bg-slate-200">-</button>
+                                    <span id="passCabinVal" class="font-mono font-bold text-slate-900">1</span>
+                                    <button type="button" onclick="adjustLuggage('cabin', 1)" class="w-6 h-6 rounded bg-slate-100 text-slate-700 font-bold hover:bg-slate-200">+</button>
+                                </div>
+                            </div>
+                            <div class="bg-white p-2 rounded-lg border border-slate-200 space-y-1">
+                                <label class="block text-[10px] text-slate-500 font-medium">Check-in Bags (2u each)</label>
+                                <div class="flex items-center justify-between">
+                                    <button type="button" onclick="adjustLuggage('checkin', -1)" class="w-6 h-6 rounded bg-slate-100 text-slate-700 font-bold hover:bg-slate-200">-</button>
+                                    <span id="passCheckinVal" class="font-mono font-bold text-slate-900">1</span>
+                                    <button type="button" onclick="adjustLuggage('checkin', 1)" class="w-6 h-6 rounded bg-slate-100 text-slate-700 font-bold hover:bg-slate-200">+</button>
+                                </div>
+                            </div>
+                        </div>
+                        <p class="text-[10px] text-slate-500 leading-tight">
+                            *Commercial CNG sedans lose 65% trunk space. AirShare 2D Knapsack ensures your luggage never exceeds MPV trunk limits.
+                        </p>
+                    </div>
+
+                    <!-- Drop Destination (15 Real Bengaluru Hubs) -->
+                    <div>
+                        <label class="block text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-1">Drop Hub Destination (15 Corridors)</label>
+                        <select id="passDestination" onchange="updateFarePreview()" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-1.5 text-xs text-slate-900 font-medium focus:outline-none focus:border-emerald-500">
+                            <!-- Corridor 1: North-South Highway -->
+                            <option value="Hebbal Flyover|13.0358|77.5970|28|1">Hebbal Flyover (Corridor 1 • 28km)</option>
+                            <option value="MG Road Central|12.9716|77.6033|36|1">MG Road Central (Corridor 1 • 36km)</option>
+                            <option value="Indiranagar 100ft Rd|12.9784|77.6408|38|1">Indiranagar 100ft Rd (Corridor 1 • 38km)</option>
+                            <option value="Silk Board Flyover|12.9172|77.6228|46|1">Silk Board Flyover (Corridor 1 • 46km)</option>
+                            <option value="BTM Layout Hub|12.9166|77.6101|47|1">BTM Layout Hub (Corridor 1 • 47km)</option>
+                            <option value="Jayanagar 4th Block|12.9250|77.5938|45|1">Jayanagar 4th Block (Corridor 1 • 45km)</option>
+                            <option value="Electronic City Ph1|12.8452|77.6602|54|1">Electronic City Ph1 (Corridor 1 • 54km)</option>
+                            <!-- Corridor 2: East Spine -->
+                            <option value="Yelahanka New Town|13.0993|77.5926|18|2">Yelahanka New Town (Corridor 2 • 18km)</option>
+                            <option value="Manyata Tech Park|13.0451|77.6204|29|2">Manyata Tech Park (Corridor 2 • 29km)</option>
+                            <option value="KR Puram Station|13.0075|77.6959|32|2">KR Puram Station (Corridor 2 • 32km)</option>
+                            <option value="Marathahalli Bridge|12.9592|77.6974|40|2">Marathahalli Bridge (Corridor 2 • 40km)</option>
+                            <option value="Whitefield IT Zone|12.9698|77.7499|42|2">Whitefield IT Zone (Corridor 2 • 42km)</option>
+                            <option value="Bellandur EcoSpace|12.9279|77.6801|44|2">Bellandur EcoSpace (Corridor 2 • 44km)</option>
+                            <option value="Sarjapur Signal|12.9116|77.6741|48|2">Sarjapur Signal (Corridor 2 • 48km)</option>
+                            <!-- Corridor 3: West Spine -->
+                            <option value="Banashankari TTMC|12.9255|77.5468|43|3">Banashankari TTMC (Corridor 3 • 43km)</option>
+                        </select>
+                    </div>
+
+                    <!-- Instant Proportional Fare Estimate Card -->
+                    <div class="bg-emerald-50/70 border border-emerald-200 rounded-xl p-3 space-y-1.5 font-mono">
+                        <div class="flex justify-between items-center text-[10px] text-slate-500">
+                            <span>PROPORTIONAL DISTANCE SPLIT</span>
+                            <span class="text-emerald-700 font-bold">~59% SAVINGS</span>
+                        </div>
+                        <div class="flex justify-between items-baseline">
+                            <div>
+                                <span class="text-2xl font-bold text-emerald-700" id="fareAirShareDisplay">₹298</span>
+                                <span class="text-xs text-slate-400 line-through ml-2" id="fareSoloDisplay">₹736</span>
+                            </div>
+                            <span class="text-[10px] bg-white px-2 py-0.5 rounded border border-emerald-200 text-emerald-800 font-semibold">
+                                AirShare Shared Cab
+                            </span>
+                        </div>
+                        <p class="text-[9px] text-slate-500 leading-tight">
+                            Includes equal toll split (₹120 ÷ N) + distance proportion (₹22/km).
+                        </p>
+                    </div>
+
+                    <button type="submit" class="w-full bg-slate-900 hover:bg-slate-800 text-emerald-400 font-mono font-bold py-3 rounded-xl text-xs transition-colors shadow-sm flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-circle-check text-emerald-400"></i>
+                        <span>Confirm Physical Curbside Arrival</span>
+                    </button>
+                </form>
+            </div>
+        </section>
+
+        <!-- RIGHT COLUMN: LIVE PASSENGER RIDE STATUS CARD & MAP PREVIEW -->
+        <section class="col-span-12 lg:col-span-7 xl:col-span-8 space-y-4 flex flex-col">
+            
+            <!-- Ride Status Card -->
+            <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm space-y-3 font-mono">
+                <div class="flex justify-between items-center border-b border-slate-100 pb-2.5">
+                    <div>
+                        <span class="text-[10px] text-slate-400 uppercase font-semibold block">Passenger Booking Lifecycle</span>
+                        <span id="passCardTitle" class="text-sm font-bold text-slate-900">Booking #AS-8812 • Ananya Rao</span>
+                    </div>
+                    <span id="passStatusBadge" class="px-2.5 py-1 rounded-full text-xs font-bold bg-amber-50 text-amber-700 border border-amber-200 flex items-center gap-1.5">
+                        <span class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>
+                        <span>Waiting for Corridor Batching</span>
+                    </span>
+                </div>
+
+                <!-- Lifecycle Step Timeline -->
+                <div class="grid grid-cols-4 gap-2 text-[10px] text-center pt-1">
+                    <div id="step-1" class="p-2 rounded-lg border border-emerald-300 bg-emerald-50 text-emerald-800 font-bold">
+                        1. Curbside Confirmed
+                    </div>
+                    <div id="step-2" class="p-2 rounded-lg border border-slate-200 bg-slate-50 text-slate-400">
+                        2. Corridor Matched
+                    </div>
+                    <div id="step-3" class="p-2 rounded-lg border border-slate-200 bg-slate-50 text-slate-400">
+                        3. Driver En Route
+                    </div>
+                    <div id="step-4" class="p-2 rounded-lg border border-slate-200 bg-slate-50 text-slate-400">
+                        4. Dispatched
+                    </div>
+                </div>
+
+                <!-- Assigned Vehicle Details -->
+                <div id="assignedVehicleInfo" class="hidden bg-slate-50 rounded-xl p-3 border border-slate-200 grid grid-cols-3 gap-3 text-xs">
+                    <div>
+                        <span class="text-[10px] text-slate-400 block">Assigned Cab</span>
+                        <span class="font-bold text-slate-800">Ertiga MPV #284</span>
+                    </div>
+                    <div>
+                        <span class="text-[10px] text-slate-400 block">Driver Name</span>
+                        <span class="font-bold text-slate-800">Rajesh Kumar</span>
+                    </div>
+                    <div>
+                        <span class="text-[10px] text-slate-400 block">Trunk Load</span>
+                        <span class="font-bold text-amber-600">5/6 Volume Units</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Interactive Map Preview -->
+            <div class="flex-1 bg-white border border-slate-200 rounded-2xl overflow-hidden relative min-h-[300px]">
+                <div class="absolute top-3 left-3 z-[1000] bg-white/95 backdrop-blur-md px-3 py-1.5 rounded-lg border border-slate-200 shadow-sm text-xs font-mono font-bold text-slate-800 flex items-center gap-2">
+                    <i class="fa-solid fa-map-pin text-emerald-600"></i>
+                    <span>Bengaluru Highway Corridor Map</span>
+                </div>
+                <div id="passengerMap" class="w-full h-full"></div>
+            </div>
+
+        </section>
+    </main>
+
+    <!-- ========================================================================= -->
+    <!-- INTERFACE 2: DRIVER IN-CAB HUD CONSOLE & CONFIRMATION SYSTEM -->
+    <!-- ========================================================================= -->
+    <main id="portal-driver" class="hidden flex-1 grid grid-cols-12 overflow-hidden bg-slate-100 p-4 gap-4">
+        
+        <!-- LEFT COLUMN: INCOMING BATCH DISPATCH OFFERS & CAPACITY AUDIT (Width: 420px) -->
+        <section class="col-span-12 lg:col-span-5 xl:col-span-4 bg-white border border-slate-200 rounded-2xl shadow-sm flex flex-col justify-between overflow-hidden">
+            <!-- Header -->
+            <div class="p-4 border-b border-slate-200 bg-slate-50 flex justify-between items-center">
+                <div class="flex items-center gap-2">
+                    <span class="h-6 w-6 rounded-md bg-purple-100 text-purple-700 flex items-center justify-center text-xs font-bold font-mono">02</span>
+                    <h2 class="text-xs font-bold text-slate-900 uppercase tracking-wide">In-Cab HUD Dispatch Offers</h2>
+                </div>
+                <span class="text-[10px] font-mono font-bold bg-purple-50 text-purple-700 border border-purple-200 px-2 py-0.5 rounded">
+                    Ertiga MPV #284
+                </span>
+            </div>
+
+            <!-- Offers Feed -->
+            <div id="driverOffersContainer" class="p-4 flex-1 overflow-y-auto space-y-4 font-mono text-xs">
+                <!-- Offered Batch Card rendered via JS -->
+            </div>
+
+            <!-- Onboarding Verification Action -->
+            <div class="p-4 border-t border-slate-200 bg-slate-50 space-y-2">
+                <button id="btnConfirmOnboarding" onclick="confirmCurbsideOnboarding()" disabled class="w-full bg-slate-200 text-slate-400 font-mono font-bold py-3 rounded-xl text-xs transition-colors flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-user-check"></i>
+                    <span>Confirm Curbside Onboarding & Start Trip</span>
+                </button>
+            </div>
+        </section>
+
+        <!-- RIGHT COLUMN: ORDERED MONOTONIC ROUTE MAP & STOP SEQUENCE -->
+        <section class="col-span-12 lg:col-span-7 xl:col-span-8 space-y-4 flex flex-col">
+            
+            <!-- Monotonic Stop Sequence Navigation Bar -->
+            <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm space-y-3 font-mono">
+                <div class="flex justify-between items-center border-b border-slate-100 pb-2">
+                    <div>
+                        <span class="text-[10px] text-slate-400 uppercase font-semibold block">PostGIS ST_LineLocatePoint Monotonic Progression</span>
+                        <span class="text-xs font-bold text-slate-900">Highway Spine Sequence (0.00 → 1.00 Progress)</span>
+                    </div>
+                    <span class="text-[10px] bg-blue-50 text-blue-700 font-bold px-2 py-0.5 rounded border border-blue-200">
+                        Zero Backtracking Enforced
+                    </span>
+                </div>
+
+                <!-- Sequence Pills Container -->
+                <div id="monotonicSequenceContainer" class="grid grid-cols-3 gap-2.5 text-xs">
+                    <div class="p-2.5 rounded-xl border border-slate-200 bg-slate-50 text-slate-400 text-center">
+                        Accept dispatch offer to unlock route sequence...
+                    </div>
+                </div>
+            </div>
+
+            <!-- Driver GIS Navigation Map -->
+            <div class="flex-1 bg-white border border-slate-200 rounded-2xl overflow-hidden relative min-h-[300px]">
+                <div class="absolute top-3 left-3 z-[1000] bg-white/95 backdrop-blur-md px-3 py-1.5 rounded-lg border border-slate-200 shadow-sm text-xs font-mono font-bold text-slate-800 flex items-center gap-2">
+                    <i class="fa-solid fa-route text-purple-600"></i>
+                    <span>Driver Live HUD Navigation Map</span>
+                </div>
+                <div id="driverMap" class="w-full h-full"></div>
+            </div>
+
+        </section>
+    </main>
+
+    <!-- SYSTEM SCRIPT & REAL-TIME STATE SYNC ENGINE -->
+    <script>
+        // GLOBAL STATE
+        let currentSeats = 1;
+        let currentLuggage = { cabin: 1, checkin: 1 };
+        let activeBooking = null;
+        let driverBatchState = 'OFFERED'; // OFFERED, ACCEPTED, ONBOARDED
+        let passengerMap, driverMap;
+        let passMarkers = [], driverMarkers = [], passPolylines = [], driverPolylines = [];
+
+        let currentAirportCoords = [13.1989, 77.7068];
+        let currentAirportName = "KIA Hub";
+
+        const CORRIDORS = {
+            1: { name: "Corridor 1: North-South Highway Spine", color: "#2563EB" },
+            2: { name: "Corridor 2: East Spine (Outer Ring Rd / Whitefield)", color: "#7C3AED" },
+            3: { name: "Corridor 3: West Spine (Yeshwanthpur)", color: "#D97706" }
+        };
+
+        window.onload = function() {
+            initMaps();
+            updateLuggageUI();
+            updateFarePreview();
+            seedDefaultState();
+        };
+
+        // INTERFACE MODE SWITCHER (PASSENGER VS DRIVER HUD)
+        function switchInterface(portalMode) {
+            const passengerPortal = document.getElementById('portal-passenger');
+            const driverPortal = document.getElementById('portal-driver');
+            const tabPassenger = document.getElementById('tab-passenger');
+            const tabDriver = document.getElementById('tab-driver');
+
+            if (portalMode === 'passenger') {
+                passengerPortal.classList.remove('hidden');
+                driverPortal.classList.add('hidden');
+
+                tabPassenger.className = "px-3 py-1 rounded-md text-slate-900 bg-white border border-slate-200 shadow-xs transition-all flex items-center gap-2";
+                tabDriver.className = "px-3 py-1 rounded-md text-slate-500 hover:text-slate-800 transition-all flex items-center gap-2";
+
+                setTimeout(() => { if (passengerMap) passengerMap.invalidateSize(); }, 150);
+            } else if (portalMode === 'driver') {
+                driverPortal.classList.remove('hidden');
+                passengerPortal.classList.add('hidden');
+
+                tabDriver.className = "px-3 py-1 rounded-md text-slate-900 bg-white border border-slate-200 shadow-xs transition-all flex items-center gap-2";
+                tabPassenger.className = "px-3 py-1 rounded-md text-slate-500 hover:text-slate-800 transition-all flex items-center gap-2";
+
+                setTimeout(() => { if (driverMap) driverMap.invalidateSize(); }, 150);
+            }
+        }
+
+        function initMaps() {
+            // Passenger Map using OpenStreetMap standard tile server
+            passengerMap = L.map('passengerMap', { zoomControl: false }).setView([13.0500, 77.6300], 10);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { 
+                maxZoom: 19,
+                attribution: '&copy; OpenStreetMap'
+            }).addTo(passengerMap);
+            L.control.zoom({ position: 'bottomright' }).addTo(passengerMap);
+
+            // Driver Map using OpenStreetMap standard tile server
+            driverMap = L.map('driverMap', { zoomControl: false }).setView([13.0500, 77.6300], 10);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { 
+                maxZoom: 19,
+                attribution: '&copy; OpenStreetMap'
+            }).addTo(driverMap);
+            L.control.zoom({ position: 'bottomright' }).addTo(driverMap);
+
+            renderAirportMarkers();
+        }
+
+        function updateAirportHub() {
+            const val = document.getElementById('passAirport').value.split('|');
+            currentAirportName = `${val[0]} Hub`;
+            currentAirportCoords = [parseFloat(val[2]), parseFloat(val[3])];
+            
+            passengerMap.setView(currentAirportCoords, 10);
+            driverMap.setView(currentAirportCoords, 10);
+            
+            renderAirportMarkers();
+            updateFarePreview();
+        }
+
+        function renderAirportMarkers() {
+            const kiaIcon = L.divIcon({
+                className: 'custom-kia-icon',
+                html: `<div class="bg-emerald-600 text-white font-bold px-2 py-0.5 rounded shadow-sm text-[10px] font-mono flex items-center gap-1">
+                         <i class="fa-solid fa-plane"></i> ${currentAirportName}
+                       </div>`
+            });
+
+            L.marker(currentAirportCoords, { icon: kiaIcon }).addTo(passengerMap);
+            L.marker(currentAirportCoords, { icon: kiaIcon }).addTo(driverMap);
+        }
+
+        function adjustSeats(delta) {
+            currentSeats = Math.max(1, Math.min(4, currentSeats + delta));
+            document.getElementById('passSeatsVal').innerText = `${currentSeats} Seat${currentSeats > 1 ? 's' : ''}`;
+            updateFarePreview();
+        }
+
+        function adjustLuggage(type, delta) {
+            if (type === 'cabin') {
+                currentLuggage.cabin = Math.max(0, Math.min(4, currentLuggage.cabin + delta));
+            } else {
+                currentLuggage.checkin = Math.max(0, Math.min(3, currentLuggage.checkin + delta));
+            }
+            updateLuggageUI();
+        }
+
+        function updateLuggageUI() {
+            document.getElementById('passCabinVal').innerText = currentLuggage.cabin;
+            document.getElementById('passCheckinVal').innerText = currentLuggage.checkin;
+            const totalUnits = currentLuggage.cabin + (currentLuggage.checkin * 2);
+            document.getElementById('passUnitsDisplay').innerText = `${totalUnits} Volume Unit${totalUnits !== 1 ? 's' : ''} (${totalUnits}u)`;
+        }
+
+        function updateFarePreview() {
+            const destVal = document.getElementById('passDestination').value.split('|');
+            const distKm = parseFloat(destVal[3]);
+
+            // Solo Cab Baseline vs Proportional Distance Split with Seat Multiplier
+            const soloFare = Math.round((120 + (distKm * 32)) * currentSeats);
+            const sharedFare = Math.round(((120 / (3 + currentSeats - 1)) + ((distKm / 110) * (46 * 22))) * (1 + (currentSeats - 1) * 0.4));
+
+            document.getElementById('fareAirShareDisplay').innerText = `₹${sharedFare}`;
+            document.getElementById('fareSoloDisplay').innerText = `₹${soloFare}`;
+        }
+
+        function seedDefaultState() {
+            activeBooking = {
+                id: 'AS-8812',
+                name: 'Ananya Rao',
+                flight: '6E-204',
+                gate: 'Terminal 1 • Curb Gate 2',
+                seats: 1,
+                cabin: 1, checkin: 1, luggageUnits: 3,
+                destName: 'Silk Board Flyover',
+                lat: 12.9172, lng: 77.6228, distKm: 46, corridorId: 1,
+                progress: 0.76, status: 'WAITING',
+                calculatedFare: 298, soloFare: 736
+            };
+            syncStateToDriverHUD();
+        }
+
+        function submitPassengerBooking(e) {
+            e.preventDefault();
+            const destVal = document.getElementById('passDestination').value.split('|');
+
+            activeBooking = {
+                id: `AS-${Math.floor(1000 + Math.random() * 9000)}`,
+                name: document.getElementById('passName').value,
+                flight: document.getElementById('passFlight').value,
+                gate: document.getElementById('passGate').value,
+                seats: currentSeats,
+                cabin: currentLuggage.cabin,
+                checkin: currentLuggage.checkin,
+                luggageUnits: currentLuggage.cabin + (currentLuggage.checkin * 2),
+                destName: destVal[0],
+                lat: parseFloat(destVal[1]),
+                lng: parseFloat(destVal[2]),
+                distKm: parseFloat(destVal[3]),
+                corridorId: parseInt(destVal[4]),
+                progress: (parseFloat(destVal[3]) / 60).toFixed(2),
+                status: 'WAITING',
+                calculatedFare: parseInt(document.getElementById('fareAirShareDisplay').innerText.replace('₹','')),
+                soloFare: parseInt(document.getElementById('fareSoloDisplay').innerText.replace('₹',''))
+            };
+
+            driverBatchState = 'OFFERED';
+            syncStateToDriverHUD();
+            alert(`Curbside Arrival Verified! Booking submitted for ${activeBooking.seats} seat(s) and ${activeBooking.luggageUnits}u luggage.`);
+        }
+
+        // REAL-TIME STATE SYNCHRONIZATION ENGINE
+        function syncStateToDriverHUD() {
+            if (!activeBooking) return;
+
+            const offersContainer = document.getElementById('driverOffersContainer');
+            
+            const totalSeats = (activeBooking.seats || 1) + 2; // Co-riders
+            const totalBootUnits = activeBooking.luggageUnits + 2;
+
+            offersContainer.innerHTML = `
+                <div class="bg-white border border-slate-200 rounded-xl p-3.5 space-y-3 shadow-xs">
+                    <div class="flex justify-between items-center border-b border-slate-100 pb-2">
+                        <div>
+                            <span class="font-bold text-slate-900 text-sm">Batch Offer #BT-902</span>
+                            <span class="text-[10px] text-slate-500 block">Corridor #${activeBooking.corridorId} • North-South Highway</span>
+                        </div>
+                        <span class="text-[10px] font-bold px-2 py-0.5 rounded ${driverBatchState === 'OFFERED' ? 'bg-amber-50 text-amber-700 border border-amber-200' : 'bg-emerald-50 text-emerald-700 border border-emerald-200'}">
+                            ${driverBatchState}
+                        </span>
+                    </div>
+
+                    <!-- Dual Knapsack Capacity Check -->
+                    <div class="grid grid-cols-2 gap-2 text-[10px]">
+                        <div class="bg-slate-50 p-2 rounded-lg border border-slate-200 space-y-1">
+                            <div class="flex justify-between text-slate-500">
+                                <span>Seats Occupied</span>
+                                <strong class="text-slate-800">${totalSeats}/6</strong>
+                            </div>
+                            <div class="w-full bg-slate-200 h-1.5 rounded overflow-hidden">
+                                <div class="bg-blue-600 h-full" style="width: ${Math.round((totalSeats/6)*100)}%"></div>
+                            </div>
+                        </div>
+
+                        <div class="bg-slate-50 p-2 rounded-lg border border-slate-200 space-y-1">
+                            <div class="flex justify-between text-slate-500">
+                                <span>CNG Trunk Load</span>
+                                <strong class="text-amber-600">${totalBootUnits}/6u</strong>
+                            </div>
+                            <div class="w-full bg-slate-200 h-1.5 rounded overflow-hidden">
+                                <div class="bg-amber-500 h-full" style="width: ${Math.round((totalBootUnits/6)*100)}%"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Manifest -->
+                    <div class="space-y-1.5 pt-1">
+                        <span class="text-[10px] text-slate-400 font-semibold uppercase block">Batch Manifest (${activeBooking.gate})</span>
+                        <div class="bg-slate-50 p-2 rounded-lg border border-slate-200 flex justify-between items-center text-[11px]">
+                            <div>
+                                <strong class="text-slate-800">${activeBooking.name} (${activeBooking.flight})</strong>
+                                <span class="text-[10px] text-slate-500 block">${activeBooking.destName} • ${activeBooking.seats || 1} Seat(s) • ${activeBooking.luggageUnits}u Luggage</span>
+                            </div>
+                            <span class="font-bold text-emerald-700">₹${activeBooking.calculatedFare}</span>
+                        </div>
+                    </div>
+
+                    <!-- Action Control -->
+                    ${driverBatchState === 'OFFERED' ? `
+                        <div class="grid grid-cols-2 gap-2 pt-1">
+                            <button onclick="acceptDriverOffer()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 rounded-lg text-xs transition-colors flex items-center justify-center gap-1">
+                                <i class="fa-solid fa-check"></i> Accept Batch
+                            </button>
+                            <button onclick="rejectDriverOffer()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-2 rounded-lg text-xs transition-colors">
+                                Reject Offer
+                            </button>
+                        </div>
+                    ` : `
+                        <div class="bg-emerald-50 border border-emerald-200 text-emerald-800 p-2 rounded-lg text-center text-xs font-bold">
+                            <i class="fa-solid fa-circle-check"></i> Offer Accepted • Proceed to ${activeBooking.gate}
+                        </div>
+                    `}
+                </div>
+            `;
+
+            updatePassengerLifecycleUI();
+            renderMapsData();
+        }
+
+        function acceptDriverOffer() {
+            driverBatchState = 'ACCEPTED';
+            activeBooking.status = 'DRIVER_EN_ROUTE';
+            syncStateToDriverHUD();
+
+            document.getElementById('btnConfirmOnboarding').disabled = false;
+            document.getElementById('btnConfirmOnboarding').className = "w-full bg-emerald-600 hover:bg-emerald-700 text-white font-mono font-bold py-3 rounded-xl text-xs transition-colors flex items-center justify-center gap-2 shadow-sm";
+        }
+
+        function rejectDriverOffer() {
+            alert("Offer rejected. Re-assigning batch to next available Ertiga MPV...");
+        }
+
+        function confirmCurbsideOnboarding() {
+            driverBatchState = 'ONBOARDED';
+            activeBooking.status = 'DISPATCHED';
+            syncStateToDriverHUD();
+            alert("Passenger Onboarded! Monotonic Highway Route sequence unlocked.");
+        }
+
+        function updatePassengerLifecycleUI() {
+            const cardTitle = document.getElementById('passCardTitle');
+            const statusBadge = document.getElementById('passStatusBadge');
+            const infoBox = document.getElementById('assignedVehicleInfo');
+
+            cardTitle.innerText = `Booking #${activeBooking.id} • ${activeBooking.name}`;
+
+            const steps = [
+                document.getElementById('step-1'),
+                document.getElementById('step-2'),
+                document.getElementById('step-3'),
+                document.getElementById('step-4')
+            ];
+
+            steps.forEach(s => s.className = "p-2 rounded-lg border border-slate-200 bg-slate-50 text-slate-400");
+
+            if (activeBooking.status === 'WAITING') {
+                statusBadge.className = "px-2.5 py-1 rounded-full text-xs font-bold bg-amber-50 text-amber-700 border border-amber-200 flex items-center gap-1.5";
+                statusBadge.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span> Waiting for Corridor Batching`;
+                steps[0].className = "p-2 rounded-lg border border-emerald-300 bg-emerald-50 text-emerald-800 font-bold";
+                infoBox.classList.add('hidden');
+            } else if (activeBooking.status === 'DRIVER_EN_ROUTE') {
+                statusBadge.className = "px-2.5 py-1 rounded-full text-xs font-bold bg-blue-50 text-blue-700 border border-blue-200 flex items-center gap-1.5";
+                statusBadge.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse"></span> Driver En Route to Curbside`;
+                steps[0].className = "p-2 rounded-lg border border-emerald-300 bg-emerald-50 text-emerald-800 font-bold";
+                steps[1].className = "p-2 rounded-lg border border-emerald-300 bg-emerald-50 text-emerald-800 font-bold";
+                steps[2].className = "p-2 rounded-lg border border-blue-300 bg-blue-50 text-blue-800 font-bold";
+                infoBox.classList.remove('hidden');
+            } else if (activeBooking.status === 'DISPATCHED') {
+                statusBadge.className = "px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 flex items-center gap-1.5";
+                statusBadge.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Dispatched on Highway Spine`;
+                steps.forEach(s => s.className = "p-2 rounded-lg border border-emerald-300 bg-emerald-50 text-emerald-800 font-bold");
+                infoBox.classList.remove('hidden');
+            }
+        }
+
+        function renderMapsData() {
+            const monoContainer = document.getElementById('monotonicSequenceContainer');
+            
+            if (driverBatchState === 'OFFERED') {
+                monoContainer.innerHTML = `<div class="col-span-3 p-2.5 rounded-xl border border-slate-200 bg-slate-50 text-slate-400 text-center">Accept dispatch offer to unlock route sequence...</div>`;
+            } else {
+                monoContainer.innerHTML = `
+                    <div class="p-2 rounded-xl border border-blue-200 bg-blue-50 text-blue-800">
+                        <span class="text-[9px] text-slate-400 block font-semibold">STOP 1 (km 28)</span>
+                        <strong class="text-xs">Hebbal Flyover</strong>
+                    </div>
+                    <div class="p-2 rounded-xl border border-purple-200 bg-purple-50 text-purple-800">
+                        <span class="text-[9px] text-slate-400 block font-semibold">STOP 2 (km 36)</span>
+                        <strong class="text-xs">MG Road Central</strong>
+                    </div>
+                    <div class="p-2 rounded-xl border border-emerald-200 bg-emerald-50 text-emerald-800">
+                        <span class="text-[9px] text-slate-400 block font-semibold">STOP 3 (km 46)</span>
+                        <strong class="text-xs">${activeBooking.destName}</strong>
+                    </div>
+                `;
+            }
+
+            // Safely remove markers and polylines from respective map instances
+            passMarkers.forEach(m => { if (passengerMap.hasLayer(m)) passengerMap.removeLayer(m); });
+            driverMarkers.forEach(m => { if (driverMap.hasLayer(m)) driverMap.removeLayer(m); });
+            passPolylines.forEach(p => { if (passengerMap.hasLayer(p)) passengerMap.removeLayer(p); });
+            driverPolylines.forEach(p => { if (driverMap.hasLayer(p)) driverMap.removeLayer(p); });
+
+            passMarkers = [];
+            driverMarkers = [];
+            passPolylines = [];
+            driverPolylines = [];
+
+            if (activeBooking) {
+                const markerIcon = L.divIcon({
+                    className: 'custom-drop-icon',
+                    html: `<div class="bg-white border-2 border-emerald-600 text-emerald-800 px-2 py-0.5 rounded shadow-md text-[10px] font-mono font-bold">${activeBooking.destName} (₹${activeBooking.calculatedFare})</div>`
+                });
+
+                const m1 = L.marker([activeBooking.lat, activeBooking.lng], { icon: markerIcon }).addTo(passengerMap);
+                const m2 = L.marker([activeBooking.lat, activeBooking.lng], { icon: markerIcon }).addTo(driverMap);
+
+                passMarkers.push(m1);
+                driverMarkers.push(m2);
+
+                // Create distinct polyline instances for each map to avoid layer target conflicts
+                const polyPass = L.polyline([currentAirportCoords, [activeBooking.lat, activeBooking.lng]], {
+                    color: CORRIDORS[activeBooking.corridorId].color,
+                    weight: 3,
+                    dashArray: '4, 6'
+                }).addTo(passengerMap);
+
+                const polyDriver = L.polyline([currentAirportCoords, [activeBooking.lat, activeBooking.lng]], {
+                    color: CORRIDORS[activeBooking.corridorId].color,
+                    weight: 3,
+                    dashArray: '4, 6'
+                }).addTo(driverMap);
+
+                passPolylines.push(polyPass);
+                driverPolylines.push(polyDriver);
+            }
+        }
+
+        function resetDemoState() {
+            currentSeats = 1;
+            document.getElementById('passSeatsVal').innerText = "1 Seat";
+            seedDefaultState();
+            driverBatchState = 'OFFERED';
+            syncStateToDriverHUD();
+            alert("Demo state reset to default active booking.");
+        }
+    </script>
+</body>
+</html>
