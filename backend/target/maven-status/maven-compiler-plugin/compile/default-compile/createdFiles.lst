@@ -1,0 +1,9 @@
+com\ewit\airshare\repository\RideRepository.class
+com\ewit\airshare\model\RideRequest.class
+com\ewit\airshare\service\ClusteringEngineService.class
+com\ewit\airshare\service\FlightSimulatorService.class
+com\ewit\airshare\repository\HighwayCorridorRepository.class
+com\ewit\airshare\model\HighwayCorridor.class
+com\ewit\airshare\controller\AirShareController.class
+com\ewit\airshare\AirShareApplication.class
+com\ewit\airshare\dto\AddRiderRequest.class
