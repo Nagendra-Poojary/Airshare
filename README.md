@@ -26,7 +26,8 @@
 ```
 Airshare/
 ├── frontend/
-│   └── interface.html    # Standalone dual-portal interface (Passenger & Driver HUD)
+│   ├── interface.html    # Standalone dual-portal interface (Passenger & Driver HUD)
+│   └── login.html        # Enterprise authentication gateway (Passenger & Driver login)
 ├── backend/              # Backend services & APIs (FastAPI / Express ready)
 ├── .gitignore            # Git exclusion rules
 └── README.md             # Project documentation

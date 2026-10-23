@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AirShare — Enterprise Identity & Access Gateway</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#ECFDF5',
+                            100: '#D1FAE5',
+                            500: '#10B981',
+                            600: '#059669',
+                            700: '#047857',
+                        },
+                        accent: {
+                            blue: '#2563EB',
+                            amber: '#D97706',
+                            rose: '#E11D48',
+                            purple: '#7C3AED',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'Fira Code', 'Menlo', 'Consolas', 'monospace'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:ital,wght@0,400;0,500;0,600;1,400&display=swap');
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #F8FAFC;
+            color: #0F172A;
+            letter-spacing: -0.011em;
+        }
+
+        .font-mono {
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #F1F5F9;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #CBD5E1;
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94A3B8;
+        }
+
+        @keyframes pulse-subtle {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.4; }
+        }
+        .animate-pulse-subtle {
+            animation: pulse-subtle 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+
+        .ambient-grid {
+            background-size: 32px 32px;
+            background-image: 
+                linear-gradient(to right, rgba(226, 232, 240, 0.6) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(226, 232, 240, 0.6) 1px, transparent 1px);
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between text-slate-800 select-none antialiased bg-slate-50 ambient-grid">
+
+    <!-- 1. TOP GLOBAL NAVIGATION HEADER -->
+    <header class="bg-white/90 backdrop-blur-md border-b border-slate-200 px-5 py-2.5 flex items-center justify-between shrink-0 z-20 shadow-xs">
+        <!-- Brand & Engine Context -->
+        <div class="flex items-center gap-4">
+            <a href="interface.html" class="flex items-center gap-2.5 group">
+                <div class="h-8 w-8 rounded-lg bg-emerald-50 border border-emerald-200 flex items-center justify-center text-emerald-600 font-bold text-sm shadow-xs group-hover:scale-105 transition-transform">
+                    <i class="fa-solid fa-plane-circle-check"></i>
+                </div>
+                <div>
+                    <div class="flex items-center gap-2">
+                        <span class="font-bold text-sm tracking-tight text-slate-900 font-mono">AirShare</span>
+                        <span class="text-[10px] font-mono font-semibold px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-200">
+                            com.ewit.airshare
+                        </span>
+                    </div>
+                    <p class="text-[10px] text-slate-500 flex items-center gap-1.5 font-medium">
+                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse-subtle"></span>
+                        Secure Auth Gateway • KIA Hub
+                    </p>
+                </div>
+            </a>
+        </div>
+
+        <!-- Right Quick Controls -->
+        <div class="flex items-center gap-3 text-xs">
+            <span class="hidden sm:flex items-center gap-1.5 font-mono text-[11px] text-slate-500 bg-slate-100 px-2.5 py-1 rounded-lg border border-slate-200">
+                <i class="fa-solid fa-shield-halved text-emerald-600"></i>
+                TLS 1.3 Encrypted
+            </span>
+            <a href="interface.html" class="px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 text-xs font-semibold transition-all flex items-center gap-1.5 shadow-xs">
+                <span>Direct Live Console</span>
+                <i class="fa-solid fa-arrow-right text-[10px] text-slate-500"></i>
+            </a>
+        </div>
+    </header>
+
+    <!-- 2. MAIN LOGIN CONTAINER -->
+    <main class="flex-1 flex items-center justify-center p-4 sm:p-6 my-auto">
+        <div class="w-full max-w-md bg-white border border-slate-200 rounded-2xl shadow-xl shadow-slate-200/50 overflow-hidden transition-all duration-300">
+            
+            <!-- Persona Switcher Bar -->
+            <div class="p-3 border-b border-slate-200 bg-slate-50 flex items-center justify-between">
+                <div class="flex items-center bg-slate-200/80 p-1 rounded-xl text-xs font-semibold w-full">
+                    <button type="button" onclick="switchLoginPersona('passenger')" id="loginTabPassenger" class="flex-1 py-1.5 rounded-lg text-slate-900 bg-white border border-slate-200 shadow-xs transition-all flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-user-check text-emerald-600 text-[11px]"></i>
+                        <span>Passenger Portal</span>
+                    </button>
+                    <button type="button" onclick="switchLoginPersona('driver')" id="loginTabDriver" class="flex-1 py-1.5 rounded-lg text-slate-500 hover:text-slate-800 transition-all flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-taxi text-purple-600 text-[11px]"></i>
+                        <span>Driver In-Cab HUD</span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="p-6 space-y-5">
+                
+                <!-- Dynamic Header Description -->
+                <div id="personaHeaderBlock" class="text-left space-y-1">
+                    <div class="flex items-center justify-between">
+                        <span id="personaPill" class="text-[10px] font-mono font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-200">
+                            Curbside Check-in Access
+                        </span>
+                        <span class="text-[11px] font-mono text-slate-400">Ver. 2.4</span>
+                    </div>
+                    <h1 id="personaHeading" class="text-lg font-bold text-slate-900 tracking-tight">Sign In to AirShare</h1>
+                    <p id="personaSubtext" class="text-xs text-slate-500">Access rapid airport pool batching, baggage optimization, and live curbside boarding.</p>
+                </div>
+
+                <!-- PASSENGER LOGIN FORM -->
+                <form id="passengerLoginForm" onsubmit="handleLoginSubmit(event, 'passenger')" class="space-y-4">
+                    
+                    <!-- Identifier Field -->
+                    <div>
+                        <label class="block text-[11px] font-semibold text-slate-600 uppercase tracking-wider mb-1.5">
+                            Mobile Number or Email
+                        </label>
+                        <div class="relative">
+                            <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400 text-xs">
+                                <i class="fa-solid fa-phone"></i>
+                            </span>
+                            <input type="text" id="passUser" required placeholder="+91 98765 43210 or email" value="+91 98765 43210" class="w-full bg-slate-50 border border-slate-200 rounded-lg pl-9 pr-3 py-2 text-xs text-slate-900 font-medium focus:outline-none focus:border-emerald-500 focus:bg-white transition-colors">
+                        </div>
+                    </div>
+
+                    <!-- Flight PNR / Password Field -->
+                    <div>
+                        <div class="flex items-center justify-between mb-1.5">
+                            <label class="block text-[11px] font-semibold text-slate-600 uppercase tracking-wider">
+                                Flight PNR or Password
+                            </label>
+                            <span class="text-[10px] text-emerald-600 font-semibold cursor-pointer hover:underline" onclick="fillPassengerDemo()">
+                                Fill Demo Creds
+                            </span>
+                        </div>
+                        <div class="relative">
+                            <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400 text-xs">
+                                <i class="fa-solid fa-plane-departure"></i>
+                            </span>
+                            <input type="password" id="passSecret" required placeholder="e.g. 6E-204 or password" value="6E-204" class="w-full bg-slate-50 border border-slate-200 rounded-lg pl-9 pr-9 py-2 text-xs text-slate-900 font-mono font-bold focus:outline-none focus:border-emerald-500 focus:bg-white transition-colors">
+                            <button type="button" onclick="toggleSecretVisibility('passSecret', this)" class="absolute inset-y-0 right-0 flex items-center pr-3 text-slate-400 hover:text-slate-600 text-xs">
+                                <i class="fa-regular fa-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Remember Device -->
+                    <div class="flex items-center justify-between text-xs pt-1">
+                        <label class="flex items-center gap-2 cursor-pointer select-none">
+                            <input type="checkbox" checked class="rounded border-slate-300 text-emerald-600 focus:ring-0 w-3.5 h-3.5">
+                            <span class="text-slate-600 text-[11px]">Remember Curbside Session</span>
+                        </label>
+                        <a href="#" class="text-[11px] text-slate-500 hover:text-slate-800 transition-colors">Get OTP</a>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <button type="submit" id="passSubmitBtn" class="w-full bg-emerald-600 hover:bg-emerald-700 active:scale-[0.99] text-white font-mono font-bold py-2.5 rounded-xl text-xs transition-all flex items-center justify-center gap-2 shadow-sm">
+                        <span>Access Passenger Portal</span>
+                        <i class="fa-solid fa-arrow-right text-[10px]"></i>
+                    </button>
+                </form>
+
+                <!-- DRIVER LOGIN FORM (Hidden by default) -->
+                <form id="driverLoginForm" onsubmit="handleLoginSubmit(event, 'driver')" class="space-y-4 hidden">
+                    
+                    <!-- Driver Badge / Phone -->
+                    <div>
+                        <label class="block text-[11px] font-semibold text-slate-600 uppercase tracking-wider mb-1.5">
+                            Driver Commercial Badge ID
+                        </label>
+                        <div class="relative">
+                            <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400 text-xs">
+                                <i class="fa-solid fa-id-card"></i>
+                            </span>
+                            <input type="text" id="driverBadge" required placeholder="e.g. DRV-8841-KIA" value="DRV-8841-KIA" class="w-full bg-slate-50 border border-slate-200 rounded-lg pl-9 pr-3 py-2 text-xs text-slate-900 font-mono font-bold focus:outline-none focus:border-purple-500 focus:bg-white transition-colors">
+                        </div>
+                    </div>
+
+                    <!-- Vehicle Registration & PIN -->
+                    <div>
+                        <div class="flex items-center justify-between mb-1.5">
+                            <label class="block text-[11px] font-semibold text-slate-600 uppercase tracking-wider">
+                                Vehicle Reg No & In-Cab PIN
+                            </label>
+                            <span class="text-[10px] text-purple-600 font-semibold cursor-pointer hover:underline" onclick="fillDriverDemo()">
+                                Fill Demo Driver
+                            </span>
+                        </div>
+                        <div class="relative">
+                            <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400 text-xs">
+                                <i class="fa-solid fa-key"></i>
+                            </span>
+                            <input type="password" id="driverPin" required placeholder="Vehicle PIN (e.g. 4102)" value="4102" class="w-full bg-slate-50 border border-slate-200 rounded-lg pl-9 pr-9 py-2 text-xs text-slate-900 font-mono font-bold focus:outline-none focus:border-purple-500 focus:bg-white transition-colors">
+                            <button type="button" onclick="toggleSecretVisibility('driverPin', this)" class="absolute inset-y-0 right-0 flex items-center pr-3 text-slate-400 hover:text-slate-600 text-xs">
+                                <i class="fa-regular fa-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Vehicle Specification Banner -->
+                    <div class="bg-purple-50 border border-purple-200 rounded-xl p-2.5 flex items-center justify-between text-[11px]">
+                        <div class="flex items-center gap-2">
+                            <i class="fa-solid fa-car-side text-purple-600 text-xs"></i>
+                            <span class="font-medium text-slate-700">Vehicle: <strong class="text-purple-800">Maruti Ertiga CNG</strong></span>
+                        </div>
+                        <span class="text-[10px] font-mono font-bold bg-white px-2 py-0.5 rounded border border-purple-200 text-purple-700">6 Pax + 6u</span>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <button type="submit" id="driverSubmitBtn" class="w-full bg-purple-600 hover:bg-purple-700 active:scale-[0.99] text-white font-mono font-bold py-2.5 rounded-xl text-xs transition-all flex items-center justify-center gap-2 shadow-sm">
+                        <span>Launch In-Cab HUD Console</span>
+                        <i class="fa-solid fa-gauge-high text-[10px]"></i>
+                    </button>
+                </form>
+
+                <!-- Demo One-Click Access Buttons -->
+                <div class="pt-2 border-t border-slate-100">
+                    <span class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block text-center mb-2">
+                        Instant Simulator Access
+                    </span>
+                    <div class="grid grid-cols-2 gap-2 text-xs">
+                        <button type="button" onclick="instantDemoLaunch('passenger')" class="p-2 rounded-lg border border-slate-200 bg-slate-50 hover:bg-emerald-50 hover:border-emerald-200 hover:text-emerald-700 transition-colors flex items-center justify-center gap-1.5 text-[11px] font-medium text-slate-600">
+                            <i class="fa-solid fa-user text-emerald-600"></i>
+                            <span>Demo Passenger</span>
+                        </button>
+                        <button type="button" onclick="instantDemoLaunch('driver')" class="p-2 rounded-lg border border-slate-200 bg-slate-50 hover:bg-purple-50 hover:border-purple-200 hover:text-purple-700 transition-colors flex items-center justify-center gap-1.5 text-[11px] font-medium text-slate-600">
+                            <i class="fa-solid fa-taxi text-purple-600"></i>
+                            <span>Demo Driver</span>
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Footer Meta Banner -->
+            <div class="p-3 bg-slate-50 border-t border-slate-200 text-center text-[11px] text-slate-500 font-mono flex items-center justify-between px-6">
+                <span class="flex items-center gap-1.5">
+                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                    Gateway Online
+                </span>
+                <span>Latency: 28ms</span>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- 3. FOOTER -->
+    <footer class="bg-white border-t border-slate-200 px-5 py-3 text-center text-xs text-slate-500 flex flex-col sm:flex-row items-center justify-between gap-2 shrink-0">
+        <div class="flex items-center gap-2 text-[11px] font-mono">
+            <span class="font-bold text-slate-700">AirShare Engine</span>
+            <span>•</span>
+            <span>Kempegowda International Airport (BLR) Hub</span>
+        </div>
+        <div class="text-[11px] text-slate-400">
+            &copy; 2026 AirShare Platform. All rights reserved.
+        </div>
+    </footer>
+
+    <!-- INTERACTIVE AUTH SCRIPT -->
+    <script>
+        let currentPersona = 'passenger';
+
+        function switchLoginPersona(persona) {
+            currentPersona = persona;
+            const tabPass = document.getElementById('loginTabPassenger');
+            const tabDriver = document.getElementById('loginTabDriver');
+            const formPass = document.getElementById('passengerLoginForm');
+            const formDriver = document.getElementById('driverLoginForm');
+            const pill = document.getElementById('personaPill');
+            const heading = document.getElementById('personaHeading');
+            const subtext = document.getElementById('personaSubtext');
+
+            if (persona === 'passenger') {
+                tabPass.className = "flex-1 py-1.5 rounded-lg text-slate-900 bg-white border border-slate-200 shadow-xs transition-all flex items-center justify-center gap-2";
+                tabDriver.className = "flex-1 py-1.5 rounded-lg text-slate-500 hover:text-slate-800 transition-all flex items-center justify-center gap-2";
+                
+                formPass.classList.remove('hidden');
+                formDriver.classList.add('hidden');
+
+                pill.className = "text-[10px] font-mono font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-200";
+                pill.innerText = "Curbside Check-in Access";
+                heading.innerText = "Sign In as Passenger";
+                subtext.innerText = "Access rapid airport pool batching, baggage optimization, and live curbside boarding.";
+            } else {
+                tabDriver.className = "flex-1 py-1.5 rounded-lg text-slate-900 bg-white border border-slate-200 shadow-xs transition-all flex items-center justify-center gap-2";
+                tabPass.className = "flex-1 py-1.5 rounded-lg text-slate-500 hover:text-slate-800 transition-all flex items-center justify-center gap-2";
+                
+                formDriver.classList.remove('hidden');
+                formPass.classList.add('hidden');
+
+                pill.className = "text-[10px] font-mono font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-purple-50 text-purple-700 border border-purple-200";
+                pill.innerText = "Driver In-Cab HUD Console";
+                heading.innerText = "Sign In as Driver";
+                subtext.innerText = "Authenticate in-cab telematics, highway batch manifests, and trunk capacity sensors.";
+            }
+        }
+
+        function toggleSecretVisibility(inputId, btn) {
+            const input = document.getElementById(inputId);
+            const icon = btn.querySelector('i');
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.className = 'fa-regular fa-eye-slash';
+            } else {
+                input.type = 'password';
+                icon.className = 'fa-regular fa-eye';
+            }
+        }
+
+        function fillPassengerDemo() {
+            document.getElementById('passUser').value = '+91 98765 43210';
+            document.getElementById('passSecret').value = '6E-204';
+        }
+
+        function fillDriverDemo() {
+            document.getElementById('driverBadge').value = 'DRV-8841-KIA';
+            document.getElementById('driverPin').value = '4102';
+        }
+
+        function handleLoginSubmit(e, persona) {
+            e.preventDefault();
+            const btn = persona === 'passenger' ? document.getElementById('passSubmitBtn') : document.getElementById('driverSubmitBtn');
+            const originalText = btn.innerHTML;
+            
+            btn.disabled = true;
+            btn.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin"></i> Authenticating...`;
+
+            setTimeout(() => {
+                window.location.href = `interface.html?role=${persona}`;
+            }, 600);
+        }
+
+        function instantDemoLaunch(persona) {
+            window.location.href = `interface.html?role=${persona}`;
+        }
+    </script>
+</body>
+</html>

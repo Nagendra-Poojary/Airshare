@@ -171,6 +171,10 @@
                 <i class="fa-solid fa-rotate-left text-slate-500 text-[10px]"></i>
                 <span>Reset Demo State</span>
             </button>
+            <a href="login.html" class="px-2.5 py-1.5 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 text-xs font-semibold transition-all flex items-center gap-1.5 shadow-xs">
+                <i class="fa-solid fa-arrow-right-to-bracket text-emerald-600 text-[10px]"></i>
+                <span>Sign In</span>
+            </a>
         </div>
     </header>
 
@@ -483,6 +487,15 @@
             updateLuggageUI();
             updateFarePreview();
             seedDefaultState();
+
+            // Detect role from URL params (e.g. from login.html)
+            const urlParams = new URLSearchParams(window.location.search);
+            const role = urlParams.get('role');
+            if (role === 'driver') {
+                switchInterface('driver');
+            } else if (role === 'passenger') {
+                switchInterface('passenger');
+            }
         };
 
         // INTERFACE MODE SWITCHER (PASSENGER VS DRIVER HUD)
