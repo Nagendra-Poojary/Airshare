@@ -118,14 +118,8 @@
                     <i class="fa-solid fa-plane-circle-check"></i>
                 </div>
                 <div>
-                    <div class="flex items-center gap-2">
-                        <span class="font-bold text-sm tracking-tight text-slate-900 font-mono">AirShare</span>
-                        <button type="button" onclick="detectUserLocation(event)" id="locationBadge" class="text-[10px] font-mono font-medium px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 transition-all flex items-center gap-1.5 cursor-pointer shadow-2xs" title="Click to refresh location">
-                            <i id="locationIcon" class="fa-solid fa-location-crosshairs text-[10px] text-emerald-600"></i>
-                            <span id="locationBadgeText">Auto-detect GPS</span>
-                        </button>
-                    </div>
-                    <div id="locationSubtextRow" class="text-[10px] text-slate-500 flex items-center gap-1.5 font-medium cursor-pointer mt-0.5" onclick="detectUserLocation(event)" title="Click to request location permission">
+                    <span class="font-bold text-sm tracking-tight text-slate-900 font-mono">AirShare</span>
+                    <div id="locationSubtextRow" class="text-[10px] text-slate-500 flex items-center gap-1.5 font-medium cursor-pointer" onclick="detectUserLocation(event)" title="Click to refresh location">
                         <span id="locationDot" class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse-subtle"></span>
                         <span id="locationAddress">Click to fetch current location</span>
                     </div>
@@ -156,22 +150,8 @@
                     <span class="text-[9px] text-slate-400 font-medium uppercase tracking-wider">Active Queue</span>
                     <span id="headerQueueText" class="text-xs font-bold text-slate-800">1 Booking</span>
                 </div>
-                <div class="h-5 w-px bg-slate-200"></div>
-                <div class="flex flex-col text-right">
-                    <span class="text-[9px] text-slate-400 font-medium uppercase tracking-wider">Curbside Sync</span>
-                    <span class="text-xs font-bold text-emerald-600">Zero Idle Wait</span>
-                </div>
-                <div class="h-5 w-px bg-slate-200"></div>
-                <div class="flex flex-col text-right">
-                    <span class="text-[9px] text-slate-400 font-medium uppercase tracking-wider">Avg Savings</span>
-                    <span class="text-xs font-bold text-emerald-600">59% Proportional</span>
-                </div>
             </div>
 
-            <button onclick="resetDemoState()" class="px-2.5 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 text-xs font-semibold transition-all flex items-center gap-1.5 shadow-xs">
-                <i class="fa-solid fa-rotate-left text-slate-500 text-[10px]"></i>
-                <span>Reset Demo State</span>
-            </button>
             <a href="login.html" class="px-2.5 py-1.5 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 text-xs font-semibold transition-all flex items-center gap-1.5 shadow-xs">
                 <i class="fa-solid fa-arrow-right-to-bracket text-emerald-600 text-[10px]"></i>
                 <span>Sign In</span>
@@ -278,9 +258,6 @@
                                 </div>
                             </div>
                         </div>
-                        <p class="text-[10px] text-slate-500 leading-tight">
-                            *Commercial CNG sedans lose 65% trunk space. AirShare 2D Knapsack ensures your luggage never exceeds MPV trunk limits.
-                        </p>
                     </div>
 
                     <!-- Drop Destination (15 Real Bengaluru Hubs) -->
@@ -343,7 +320,6 @@
             <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm space-y-3 font-mono">
                 <div class="flex justify-between items-center border-b border-slate-100 pb-2.5">
                     <div>
-                        <span class="text-[10px] text-slate-400 uppercase font-semibold block">Passenger Booking Lifecycle</span>
                         <span id="passCardTitle" class="text-sm font-bold text-slate-900">Booking #AS-8812 • Ananya Rao</span>
                     </div>
                     <span id="passStatusBadge" class="px-2.5 py-1 rounded-full text-xs font-bold bg-amber-50 text-amber-700 border border-amber-200 flex items-center gap-1.5">
@@ -504,32 +480,23 @@
         // AUTO LOCATION FETCHER WITH PERMISSION
         function detectUserLocation(e) {
             if (e && e.stopPropagation) e.stopPropagation();
-            const badge = document.getElementById('locationBadge');
-            const badgeText = document.getElementById('locationBadgeText');
-            const icon = document.getElementById('locationIcon');
             const dot = document.getElementById('locationDot');
             const address = document.getElementById('locationAddress');
 
             if (!navigator.geolocation) {
-                badgeText.innerText = "GPS Not Supported";
-                address.innerText = "Geolocation not supported";
-                dot.className = "w-1.5 h-1.5 rounded-full bg-rose-500";
+                if (address) address.innerText = "Geolocation not supported";
+                if (dot) dot.className = "w-1.5 h-1.5 rounded-full bg-rose-500";
                 return;
             }
 
-            badgeText.innerText = "Requesting GPS...";
-            icon.className = "fa-solid fa-spinner fa-spin text-[10px] text-emerald-600";
-            address.innerText = "Please allow location permission in prompt...";
-            dot.className = "w-1.5 h-1.5 rounded-full bg-amber-400 animate-ping";
+            if (address) address.innerText = "Allow location in prompt...";
+            if (dot) dot.className = "w-1.5 h-1.5 rounded-full bg-amber-400 animate-ping";
 
             navigator.geolocation.getCurrentPosition(
                 async (pos) => {
                     const lat = pos.coords.latitude;
                     const lon = pos.coords.longitude;
-                    dot.className = "w-1.5 h-1.5 rounded-full bg-emerald-500";
-                    icon.className = "fa-solid fa-location-dot text-[10px] text-emerald-600";
-                    badgeText.innerText = "GPS Active";
-                    badge.className = "text-[10px] font-mono font-medium px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-200 shadow-2xs";
+                    if (dot) dot.className = "w-1.5 h-1.5 rounded-full bg-emerald-500";
 
                     try {
                         const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&zoom=14`, {
@@ -539,22 +506,16 @@
                             const data = await res.json();
                             const city = data.address.city || data.address.town || data.address.suburb || data.address.county || "Detected Location";
                             const state = data.address.state || "";
-                            address.innerText = `${city}${state ? ', ' + state : ''} (${lat.toFixed(2)}°, ${lon.toFixed(2)}°)`;
+                            if (address) address.innerText = `${city}${state ? ', ' + state : ''} (${lat.toFixed(2)}°, ${lon.toFixed(2)}°)`;
                             return;
                         }
                     } catch (err) {}
-                    address.innerText = `Detected: ${lat.toFixed(3)}°N, ${lon.toFixed(3)}°E`;
+                    if (address) address.innerText = `Detected: ${lat.toFixed(3)}°N, ${lon.toFixed(3)}°E`;
                 },
                 (err) => {
-                    icon.className = "fa-solid fa-location-crosshairs text-[10px] text-rose-500";
-                    dot.className = "w-1.5 h-1.5 rounded-full bg-rose-400";
-                    badge.className = "text-[10px] font-mono font-medium px-2 py-0.5 rounded bg-rose-50 text-rose-700 border border-rose-200 hover:bg-rose-100 transition-all cursor-pointer shadow-2xs";
-                    if (err.code === 1) {
-                        badgeText.innerText = "Permission Denied";
-                        address.innerText = "Location blocked. Click here to retry";
-                    } else {
-                        badgeText.innerText = "GPS Offline";
-                        address.innerText = "Location unavailable. Click to retry";
+                    if (dot) dot.className = "w-1.5 h-1.5 rounded-full bg-rose-400";
+                    if (address) {
+                        address.innerText = err.code === 1 ? "Location blocked. Click to retry" : "Location unavailable. Click to retry";
                     }
                 },
                 { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 }
@@ -867,15 +828,20 @@
             }
 
             // Safely remove markers and polylines from respective map instances
-            passMarkers.forEach(m => { if (passengerMap.hasLayer(m)) passengerMap.removeLayer(m); });
-            driverMarkers.forEach(m => { if (driverMap.hasLayer(m)) driverMap.removeLayer(m); });
-            passPolylines.forEach(p => { if (passengerMap.hasLayer(p)) passengerMap.removeLayer(p); });
-            driverPolylines.forEach(p => { if (driverMap.hasLayer(p)) driverMap.removeLayer(p); });
+            passMarkers.forEach(m => { if (passengerMap && passengerMap.hasLayer(m)) passengerMap.removeLayer(m); });
+            driverMarkers.forEach(m => { if (driverMap && driverMap.hasLayer(m)) driverMap.removeLayer(m); });
+            passPolylines.forEach(p => { if (passengerMap && passengerMap.hasLayer(p)) passengerMap.removeLayer(p); });
+            driverPolylines.forEach(p => { if (driverMap && driverMap.hasLayer(p)) driverMap.removeLayer(p); });
 
             passMarkers = [];
             driverMarkers = [];
             passPolylines = [];
             driverPolylines = [];
+
+            if (liveTrackingInterval) {
+                clearInterval(liveTrackingInterval);
+                liveTrackingInterval = null;
+            }
 
             if (activeBooking) {
                 const markerIcon = L.divIcon({
@@ -889,21 +855,91 @@
                 passMarkers.push(m1);
                 driverMarkers.push(m2);
 
-                // Create distinct polyline instances for each map to avoid layer target conflicts
+                const corridorColor = (CORRIDORS[activeBooking.corridorId] && CORRIDORS[activeBooking.corridorId].color) || '#2563EB';
+
+                // SOLID LIVE TRACKING HIGHWAY ROUTE (No dotted lines)
+                // Glow base layer
+                const glowPass = L.polyline([currentAirportCoords, [activeBooking.lat, activeBooking.lng]], {
+                    color: '#93C5FD',
+                    weight: 8,
+                    opacity: 0.45,
+                    lineCap: 'round',
+                    lineJoin: 'round'
+                }).addTo(passengerMap);
+
+                const glowDriver = L.polyline([currentAirportCoords, [activeBooking.lat, activeBooking.lng]], {
+                    color: '#93C5FD',
+                    weight: 8,
+                    opacity: 0.45,
+                    lineCap: 'round',
+                    lineJoin: 'round'
+                }).addTo(driverMap);
+
+                // Solid active tracking line
                 const polyPass = L.polyline([currentAirportCoords, [activeBooking.lat, activeBooking.lng]], {
-                    color: CORRIDORS[activeBooking.corridorId].color,
-                    weight: 3,
-                    dashArray: '4, 6'
+                    color: corridorColor,
+                    weight: 4,
+                    opacity: 0.95,
+                    lineCap: 'round',
+                    lineJoin: 'round'
                 }).addTo(passengerMap);
 
                 const polyDriver = L.polyline([currentAirportCoords, [activeBooking.lat, activeBooking.lng]], {
-                    color: CORRIDORS[activeBooking.corridorId].color,
-                    weight: 3,
-                    dashArray: '4, 6'
+                    color: corridorColor,
+                    weight: 4,
+                    opacity: 0.95,
+                    lineCap: 'round',
+                    lineJoin: 'round'
                 }).addTo(driverMap);
 
-                passPolylines.push(polyPass);
-                driverPolylines.push(polyDriver);
+                passPolylines.push(glowPass, polyPass);
+                driverPolylines.push(glowDriver, polyDriver);
+
+                // LIVE TRACKING VEHICLE MARKER SYSTEM
+                const liveCabIcon = L.divIcon({
+                    className: 'live-tracking-cab',
+                    iconSize: [32, 32],
+                    iconAnchor: [16, 16],
+                    html: `
+                        <div class="relative flex items-center justify-center">
+                            <span class="animate-ping absolute inline-flex h-7 w-7 rounded-full bg-emerald-400 opacity-75"></span>
+                            <div class="relative bg-slate-900 border-2 border-emerald-400 text-emerald-400 rounded-full w-7 h-7 shadow-lg flex items-center justify-center text-xs">
+                                <i class="fa-solid fa-car-side text-[11px]"></i>
+                            </div>
+                            <div class="absolute -top-6 whitespace-nowrap bg-white/95 border border-slate-200 text-slate-800 text-[9px] font-mono font-bold px-1.5 py-0.5 rounded shadow-xs flex items-center gap-1">
+                                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                                <span>Live Cab</span>
+                            </div>
+                        </div>
+                    `
+                });
+
+                let liveCabMarkerPass = L.marker(currentAirportCoords, { icon: liveCabIcon }).addTo(passengerMap);
+                let liveCabMarkerDriver = L.marker(currentAirportCoords, { icon: liveCabIcon }).addTo(driverMap);
+                passMarkers.push(liveCabMarkerPass);
+                driverMarkers.push(liveCabMarkerDriver);
+
+                let progress = 0.35;
+                const startLat = currentAirportCoords[0];
+                const startLng = currentAirportCoords[1];
+                const endLat = activeBooking.lat;
+                const endLng = activeBooking.lng;
+
+                liveTrackingInterval = setInterval(() => {
+                    progress += 0.003;
+                    if (progress > 1.0) progress = 0.05;
+
+                    const curLat = startLat + (endLat - startLat) * progress;
+                    const curLng = startLng + (endLng - startLng) * progress;
+
+                    liveCabMarkerPass.setLatLng([curLat, curLng]);
+                    liveCabMarkerDriver.setLatLng([curLat, curLng]);
+                }, 60);
+
+                // Auto frame bounds smoothly
+                const bounds = L.latLngBounds([currentAirportCoords, [activeBooking.lat, activeBooking.lng]]);
+                passengerMap.fitBounds(bounds, { padding: [40, 40] });
+                driverMap.fitBounds(bounds, { padding: [40, 40] });
             }
         }
 
