@@ -98,6 +98,13 @@
             box-shadow: 0 1px 2px rgba(0,0,0,0.05) !important;
         }
 
+        #passengerMap {
+            min-height: 420px;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
         @keyframes pulse-subtle {
             0%, 100% { opacity: 1; }
             50% { opacity: 0.4; }
@@ -486,13 +493,35 @@
         let liveTrackingInterval = null;
 
         function initMaps() {
-            // Passenger Map using OpenStreetMap standard tile server
+            const mapContainer = document.getElementById('passengerMap');
+            if (!mapContainer) return;
+
+            // Clean up existing map instance if already initialized
+            if (passengerMap) {
+                passengerMap.remove();
+                passengerMap = null;
+            }
+
+            // Initialize Leaflet Map centered on Origin Airport Hub (Kempegowda Int'l Airport)
             passengerMap = L.map('passengerMap', { zoomControl: false }).setView(currentAirportCoords, 12);
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { 
+
+            // Official Mapbox Streets Navigation Tiles with User API Key
+            const MAPBOX_KEY = 'pk.eyJ1IjoiZGVla3NoaXRoMzIiLCJhIjoiY212bDV5enJzMDNsNjJ6cXpwM2hjeGlkYyJ9.OFpUfjtPbCwC1i456Vsm5w';
+            L.tileLayer(`https://api.mapbox.com/styles/v1/mapbox/streets-v12/tiles/{z}/{x}/{y}?access_token=${MAPBOX_KEY}`, { 
+                tileSize: 512,
+                zoomOffset: -1,
                 maxZoom: 19,
-                attribution: '&copy; OpenStreetMap'
+                attribution: '&copy; <a href="https://www.mapbox.com/">Mapbox</a> &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a>'
             }).addTo(passengerMap);
+
             L.control.zoom({ position: 'bottomright' }).addTo(passengerMap);
+
+            // Recompute map container bounds after CSS layout renders
+            setTimeout(() => {
+                if (passengerMap) {
+                    passengerMap.invalidateSize();
+                }
+            }, 250);
 
             renderAirportMarkers();
         }
@@ -595,6 +624,26 @@
                 calculatedFare: parseInt(document.getElementById('fareAirShareDisplay').innerText.replace('₹','')),
                 soloFare: parseInt(document.getElementById('fareSoloDisplay').innerText.replace('₹',''))
             };
+
+            // Ingest into backend PostGIS database
+            fetch("http://localhost:8085/api/add-rider", {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    passengerName: activeBooking.name,
+                    flightNo: activeBooking.flight,
+                    seatsNeeded: activeBooking.seats,
+                    cabinBags: activeBooking.cabin,
+                    checkinBags: activeBooking.checkin,
+                    dropName: activeBooking.destName,
+                    lon: activeBooking.lng,
+                    lat: activeBooking.lat
+                })
+            }).then(r => r.json()).then(d => {
+                console.log("Ingested into PostGIS:", d);
+            }).catch(err => {
+                console.warn("Backend offline, running in local UI mode:", err);
+            });
 
             // 1. Remove Terminal Curbside Check-in Form from view
             const formCol = document.getElementById('curbsideFormSection');
