@@ -676,7 +676,11 @@
             };
 
             // Ingest into backend PostGIS database
-            fetch("http://localhost:8085/api/add-rider", {
+            const apiBase = window.location.protocol.startsWith('http') 
+                ? `${window.location.origin}/api` 
+                : `http://${window.location.hostname || 'localhost'}:8085/api`;
+
+            fetch(`${apiBase}/add-rider`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({

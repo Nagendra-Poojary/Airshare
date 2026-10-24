@@ -134,6 +134,47 @@
                 <div class="w-2.5 h-2.5 rounded-full bg-slate-900 border border-slate-700"></div>
             </div>
 
+            <!-- POOL FULL POP-UP MODAL (User Mobile Interface) -->
+            <div id="p1-pool-full-modal" class="hidden absolute inset-0 bg-slate-950/85 backdrop-blur-md z-50 flex items-center justify-center p-4">
+                <div class="bg-white rounded-3xl p-5 text-center shadow-2xl space-y-3.5 border-2 border-rose-500 w-full animate-in zoom-in-95">
+                    <div class="w-12 h-12 rounded-2xl bg-rose-100 text-rose-600 flex items-center justify-center text-xl mx-auto ring-4 ring-rose-50">
+                        <i class="fa-solid fa-triangle-exclamation"></i>
+                    </div>
+                    <div>
+                        <span class="text-[9px] font-mono font-bold bg-rose-100 text-rose-700 px-2.5 py-0.5 rounded-full uppercase">
+                            Trunk Boot Full (6/6 Units)
+                        </span>
+                        <h3 class="text-sm font-extrabold text-slate-900 mt-1.5">Cab Luggage Pool is Full!</h3>
+                        <p class="text-[11px] text-slate-600 mt-1 leading-snug">
+                            Current <strong>Ertiga MPV (KA 04 ME 4102)</strong> cannot fit your luggage. CNG cylinders limit total trunk capacity to <strong>6 units</strong>.
+                        </p>
+                    </div>
+
+                    <!-- Visual Capacity Meter -->
+                    <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-200 text-left space-y-1.5 text-[10px]">
+                        <div class="flex justify-between font-mono font-semibold">
+                            <span class="text-slate-600">Attempted Cab Load:</span>
+                            <span id="p1-modal-overflow-text" class="text-rose-600 font-bold">10u / 6u (Exceeded!)</span>
+                        </div>
+                        <div class="w-full bg-slate-200 h-2 rounded-full overflow-hidden">
+                            <div class="bg-rose-500 h-full w-full"></div>
+                        </div>
+                        <span class="text-[9px] text-slate-400 block font-sans">AirShare guarantees 0% boot overflow: no bags allowed inside passenger cabin.</span>
+                    </div>
+
+                    <!-- Actions -->
+                    <div class="space-y-2 pt-1">
+                        <button type="button" onclick="confirmNextPool(1)" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-mono font-bold py-2.5 px-3 rounded-xl shadow-md transition-all text-xs flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-taxi text-emerald-200"></i>
+                            <span>Book in Next Shared Cab (Pool #2)</span>
+                        </button>
+                        <button type="button" onclick="closePoolFullModal(1)" class="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-mono font-semibold py-2 px-3 rounded-xl transition-all text-[11px]">
+                            Modify Bags / Edit Details
+                        </button>
+                    </div>
+                </div>
+            </div>
+
             <!-- Top Status Bar -->
             <div class="pt-2.5 px-6 pb-1 flex justify-between text-[11px] font-mono font-bold text-slate-500 bg-slate-50 border-b border-slate-100">
                 <span>09:41</span>
@@ -351,10 +392,12 @@
                         <div class="flex justify-between items-center border-b border-slate-100 pb-2">
                             <div>
                                 <span class="text-[9px] text-slate-400 uppercase font-semibold">Assigned Cab</span>
-                                <strong class="block text-slate-900">Ertiga MPV (KA 04 ME 4102)</strong>
-                                <span class="text-[9px] text-slate-500">Driver: Rajesh Kumar (⭐ 4.9)</span>
+                                <div id="p1-assigned-cab-block">
+                                    <strong class="block text-slate-900">Ertiga MPV (KA 04 ME 4102)</strong>
+                                    <span class="text-[9px] text-slate-500">Driver: Rajesh Kumar (⭐ 4.9)</span>
+                                </div>
                             </div>
-                            <span class="text-[10px] font-mono font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                            <span id="p1-assigned-bay" class="text-[10px] font-mono font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
                                 BAY 4
                             </span>
                         </div>
@@ -401,6 +444,47 @@
             <div class="dynamic-island">
                 <div class="w-2 h-2 rounded-full bg-slate-800"></div>
                 <div class="w-2.5 h-2.5 rounded-full bg-slate-900 border border-slate-700"></div>
+            </div>
+
+            <!-- POOL FULL POP-UP MODAL (User Mobile Interface) -->
+            <div id="p2-pool-full-modal" class="hidden absolute inset-0 bg-slate-950/85 backdrop-blur-md z-50 flex items-center justify-center p-4">
+                <div class="bg-white rounded-3xl p-5 text-center shadow-2xl space-y-3.5 border-2 border-rose-500 w-full animate-in zoom-in-95">
+                    <div class="w-12 h-12 rounded-2xl bg-rose-100 text-rose-600 flex items-center justify-center text-xl mx-auto ring-4 ring-rose-50">
+                        <i class="fa-solid fa-triangle-exclamation"></i>
+                    </div>
+                    <div>
+                        <span class="text-[9px] font-mono font-bold bg-rose-100 text-rose-700 px-2.5 py-0.5 rounded-full uppercase">
+                            Trunk Boot Full (6/6 Units)
+                        </span>
+                        <h3 class="text-sm font-extrabold text-slate-900 mt-1.5">Cab Luggage Pool is Full!</h3>
+                        <p class="text-[11px] text-slate-600 mt-1 leading-snug">
+                            Current <strong>Ertiga MPV (KA 04 ME 4102)</strong> cannot fit your luggage. CNG cylinders limit total trunk capacity to <strong>6 units</strong>.
+                        </p>
+                    </div>
+
+                    <!-- Visual Capacity Meter -->
+                    <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-200 text-left space-y-1.5 text-[10px]">
+                        <div class="flex justify-between font-mono font-semibold">
+                            <span class="text-slate-600">Attempted Cab Load:</span>
+                            <span id="p2-modal-overflow-text" class="text-rose-600 font-bold">10u / 6u (Exceeded!)</span>
+                        </div>
+                        <div class="w-full bg-slate-200 h-2 rounded-full overflow-hidden">
+                            <div class="bg-rose-500 h-full w-full"></div>
+                        </div>
+                        <span class="text-[9px] text-slate-400 block font-sans">AirShare guarantees 0% boot overflow: no bags allowed inside passenger cabin.</span>
+                    </div>
+
+                    <!-- Actions -->
+                    <div class="space-y-2 pt-1">
+                        <button type="button" onclick="confirmNextPool(2)" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-mono font-bold py-2.5 px-3 rounded-xl shadow-md transition-all text-xs flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-taxi text-emerald-200"></i>
+                            <span>Book in Next Shared Cab (Pool #2)</span>
+                        </button>
+                        <button type="button" onclick="closePoolFullModal(2)" class="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-mono font-semibold py-2 px-3 rounded-xl transition-all text-[11px]">
+                            Modify Bags / Edit Details
+                        </button>
+                    </div>
+                </div>
             </div>
 
             <div class="pt-2.5 px-6 pb-1 flex justify-between text-[11px] font-mono font-bold text-slate-500 bg-slate-50 border-b border-slate-100">
@@ -616,10 +700,12 @@
                         <div class="flex justify-between items-center border-b border-slate-100 pb-2">
                             <div>
                                 <span class="text-[9px] text-slate-400 uppercase font-semibold">Assigned Cab</span>
-                                <strong class="block text-slate-900">Ertiga MPV (KA 04 ME 4102)</strong>
-                                <span class="text-[9px] text-slate-500">Driver: Rajesh Kumar (⭐ 4.9)</span>
+                                <div id="p2-assigned-cab-block">
+                                    <strong class="block text-slate-900">Ertiga MPV (KA 04 ME 4102)</strong>
+                                    <span class="text-[9px] text-slate-500">Driver: Rajesh Kumar (⭐ 4.9)</span>
+                                </div>
                             </div>
-                            <span class="text-[10px] font-mono font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded border border-amber-200">
+                            <span id="p2-assigned-bay" class="text-[10px] font-mono font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded border border-amber-200">
                                 BAY 4
                             </span>
                         </div>
@@ -666,6 +752,47 @@
             <div class="dynamic-island">
                 <div class="w-2 h-2 rounded-full bg-slate-800"></div>
                 <div class="w-2.5 h-2.5 rounded-full bg-slate-900 border border-slate-700"></div>
+            </div>
+
+            <!-- POOL FULL POP-UP MODAL (User Mobile Interface) -->
+            <div id="p3-pool-full-modal" class="hidden absolute inset-0 bg-slate-950/85 backdrop-blur-md z-50 flex items-center justify-center p-4">
+                <div class="bg-white rounded-3xl p-5 text-center shadow-2xl space-y-3.5 border-2 border-rose-500 w-full animate-in zoom-in-95">
+                    <div class="w-12 h-12 rounded-2xl bg-rose-100 text-rose-600 flex items-center justify-center text-xl mx-auto ring-4 ring-rose-50">
+                        <i class="fa-solid fa-triangle-exclamation"></i>
+                    </div>
+                    <div>
+                        <span class="text-[9px] font-mono font-bold bg-rose-100 text-rose-700 px-2.5 py-0.5 rounded-full uppercase">
+                            Trunk Boot Full (6/6 Units)
+                        </span>
+                        <h3 class="text-sm font-extrabold text-slate-900 mt-1.5">Cab Luggage Pool is Full!</h3>
+                        <p class="text-[11px] text-slate-600 mt-1 leading-snug">
+                            Current <strong>Ertiga MPV (KA 04 ME 4102)</strong> cannot fit your luggage. CNG cylinders limit total trunk capacity to <strong>6 units</strong>.
+                        </p>
+                    </div>
+
+                    <!-- Visual Capacity Meter -->
+                    <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-200 text-left space-y-1.5 text-[10px]">
+                        <div class="flex justify-between font-mono font-semibold">
+                            <span class="text-slate-600">Attempted Cab Load:</span>
+                            <span id="p3-modal-overflow-text" class="text-rose-600 font-bold">10u / 6u (Exceeded!)</span>
+                        </div>
+                        <div class="w-full bg-slate-200 h-2 rounded-full overflow-hidden">
+                            <div class="bg-rose-500 h-full w-full"></div>
+                        </div>
+                        <span class="text-[9px] text-slate-400 block font-sans">AirShare guarantees 0% boot overflow: no bags allowed inside passenger cabin.</span>
+                    </div>
+
+                    <!-- Actions -->
+                    <div class="space-y-2 pt-1">
+                        <button type="button" onclick="confirmNextPool(3)" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-mono font-bold py-2.5 px-3 rounded-xl shadow-md transition-all text-xs flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-taxi text-emerald-200"></i>
+                            <span>Book in Next Shared Cab (Pool #2)</span>
+                        </button>
+                        <button type="button" onclick="closePoolFullModal(3)" class="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-mono font-semibold py-2 px-3 rounded-xl transition-all text-[11px]">
+                            Modify Bags / Edit Details
+                        </button>
+                    </div>
+                </div>
             </div>
 
             <div class="pt-2.5 px-6 pb-1 flex justify-between text-[11px] font-mono font-bold text-slate-500 bg-slate-50 border-b border-slate-100">
@@ -879,10 +1006,12 @@
                         <div class="flex justify-between items-center border-b border-slate-100 pb-2">
                             <div>
                                 <span class="text-[9px] text-slate-400 uppercase font-semibold">Assigned Cab</span>
-                                <strong class="block text-slate-900">Innova MPV #301 (KA 05 MN 9180)</strong>
-                                <span class="text-[9px] text-slate-500">Corridor 2 Dedicated MPV</span>
+                                <div id="p3-assigned-cab-block">
+                                    <strong class="block text-slate-900">Innova MPV #301 (KA 05 MN 9180)</strong>
+                                    <span class="text-[9px] text-slate-500">Corridor 2 Dedicated MPV</span>
+                                </div>
                             </div>
-                            <span class="text-[10px] font-mono font-bold text-purple-700 bg-purple-50 px-2 py-0.5 rounded border border-purple-200">
+                            <span id="p3-assigned-bay" class="text-[10px] font-mono font-bold text-purple-700 bg-purple-50 px-2 py-0.5 rounded border border-purple-200">
                                 BAY 6
                             </span>
                         </div>
@@ -953,6 +1082,15 @@
                         <span id="hud-batch-badge" class="text-[9px] font-mono font-bold bg-slate-800 text-slate-400 border border-slate-700 px-2 py-0.5 rounded">
                             STANDBY
                         </span>
+                    </div>
+
+                    <!-- Fleet Scale-out Card (When Pool #2 is dispatched) -->
+                    <div id="hud-pool2-card" class="hidden p-2.5 rounded-xl bg-purple-950/60 border border-purple-500/40 text-[10px] space-y-1 font-mono">
+                        <div class="flex items-center justify-between text-purple-300 font-bold">
+                            <span class="flex items-center gap-1.5"><i class="fa-solid fa-taxi text-purple-400"></i> Next Shared Cab (Pool #2) Active</span>
+                            <span class="text-[9px] bg-purple-500/20 px-1.5 py-0.5 rounded border border-purple-500/40">BAY 5</span>
+                        </div>
+                        <p id="hud-pool2-msg" class="text-[9px] text-slate-300">Ertiga MPV (KA 04 ME 4103) dispatched: absorbing luggage overflow with 0% cramming.</p>
                     </div>
 
                     <!-- Dual Knapsack Gauges -->
@@ -1039,7 +1177,9 @@
 
     <!-- CLIENT SCRIPT & SYNC LOGIC -->
     <script>
-        const API_BASE = "http://localhost:8085/api";
+        const API_BASE = window.location.protocol.startsWith('http')
+            ? `${window.location.origin}/api`
+            : `http://${window.location.hostname || 'localhost'}:8085/api`;
 
         // State Store for All 3 Passengers & Driver
         const pData = {
@@ -1166,9 +1306,57 @@
             document.getElementById(`p${id}-solo-fare`).innerText = `Solo: ₹${soloFare}`;
         }
 
+        // Show the Pool Full Modal on the user's mobile screen
+        function showPoolFullModal(id, currentBoot, requestedBoot) {
+            const modal = document.getElementById(`p${id}-pool-full-modal`);
+            const overflowText = document.getElementById(`p${id}-modal-overflow-text`);
+            const total = currentBoot + requestedBoot;
+            if (overflowText) {
+                overflowText.innerText = `${total}u / 6u Boot Space (+${total - 6}u Exceeded!)`;
+            }
+            if (modal) modal.classList.remove('hidden');
+        }
+
+        // Close Modal & Allow User to Edit Bags
+        function closePoolFullModal(id) {
+            const modal = document.getElementById(`p${id}-pool-full-modal`);
+            if (modal) modal.classList.add('hidden');
+        }
+
+        // User chooses to book into the Next Shared Cab (Pool #2)
+        function confirmNextPool(id) {
+            closePoolFullModal(id);
+            submitBooking(id, 2); // Force assign to Pool #2
+        }
+
         // Submit Booking from Any Phone
-        function submitBooking(id) {
+        function submitBooking(id, forcePool = null) {
             pData[id].gate = document.getElementById(`p${id}-gate`).value;
+
+            // Check knapsack boot overflow if not explicitly assigned to Pool #2
+            if (forcePool) {
+                pData[id].pool = forcePool;
+            } else {
+                // Calculate current boot units & seats in Cab #1 for this corridor
+                let currentBootUnits = 0;
+                let currentSeats = 0;
+                for (let oid = 1; oid <= 3; oid++) {
+                    if (oid !== id && pData[oid].booked && (pData[oid].pool === 1 || !pData[oid].pool) && pData[oid].corridor === pData[id].corridor) {
+                        currentBootUnits += pData[oid].units;
+                        currentSeats += pData[oid].seats;
+                    }
+                }
+
+                // If adding this passenger exceeds 6 units of trunk boot or 6 seats:
+                if ((currentBootUnits + pData[id].units > 6) || (currentSeats + pData[id].seats > 6)) {
+                    // SHOW POPUP MODAL ON USER MOBILE INTERFACE!
+                    showPoolFullModal(id, currentBootUnits, pData[id].units);
+                    return; // Halt booking execution until user chooses next pool or reduces bags
+                }
+
+                pData[id].pool = 1;
+            }
+
             pData[id].booked = true;
 
             // Generate unique ticket and OTP
@@ -1180,6 +1368,55 @@
             document.getElementById(`p${id}-ticket-drop`).innerText = pData[id].dest;
             document.getElementById(`p${id}-ticket-units`).innerText = `${pData[id].units} Units (${pData[id].cabin} Cab, ${pData[id].checkin} Chk)`;
             document.getElementById(`p${id}-ticket-fare`).innerText = `₹${pData[id].fare}`;
+
+            // Update Cab & Bay info according to Pool #1 vs Pool #2
+            const cabBlock = document.getElementById(`p${id}-assigned-cab-block`);
+            const bayBadge = document.getElementById(`p${id}-assigned-bay`);
+            const statusBanner = document.getElementById(`p${id}-trip-status-banner`);
+
+            if (pData[id].pool === 2) {
+                if (cabBlock) {
+                    cabBlock.innerHTML = `
+                        <strong class="block text-slate-900">Ertiga MPV — Pool #2 (KA 04 ME 4103)</strong>
+                        <span class="text-[9px] text-purple-600 font-semibold">Driver: Suresh Gowda (⭐ 4.8) • Next Cab</span>
+                    `;
+                }
+                if (bayBadge) {
+                    bayBadge.innerText = "BAY 5";
+                    bayBadge.className = "text-[10px] font-mono font-bold text-purple-700 bg-purple-50 px-2 py-0.5 rounded border border-purple-200";
+                }
+                if (statusBanner) {
+                    statusBanner.className = "bg-purple-50 p-2.5 rounded-xl border border-purple-200 text-[10px] text-purple-900 space-y-1";
+                    statusBanner.innerHTML = `
+                        <span class="font-bold block flex items-center gap-1.5">
+                            <span class="w-2 h-2 rounded-full bg-purple-600 animate-ping"></span>
+                            <span>Status: Dispatched in Shared Pool #2</span>
+                        </span>
+                        <p class="text-[9px]">Knapsack Protected: Allocated to Next Shared MPV to prevent luggage cramming. 0% Boot Overflow Guaranteed!</p>
+                    `;
+                }
+            } else {
+                if (cabBlock) {
+                    cabBlock.innerHTML = `
+                        <strong class="block text-slate-900">Ertiga MPV (KA 04 ME 4102)</strong>
+                        <span class="text-[9px] text-slate-500">Driver: Rajesh Kumar (⭐ 4.9)</span>
+                    `;
+                }
+                if (bayBadge) {
+                    bayBadge.innerText = "BAY 4";
+                    bayBadge.className = "text-[10px] font-mono font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200";
+                }
+                if (statusBanner) {
+                    statusBanner.className = "bg-emerald-50 p-2.5 rounded-xl border border-emerald-200 text-[10px] text-emerald-900 space-y-1";
+                    statusBanner.innerHTML = `
+                        <span class="font-bold block flex items-center gap-1.5">
+                            <span class="w-2 h-2 rounded-full bg-emerald-600 animate-ping"></span>
+                            <span>Status: Cab Waiting in Curbside Bay 4</span>
+                        </span>
+                        <p class="text-[9px]">Trunk capacity verified & locked: Accommodated with 0% boot overflow!</p>
+                    `;
+                }
+            }
 
             document.getElementById(`p${id}-booking`).classList.add('hidden');
             document.getElementById(`p${id}-ticket`).classList.remove('hidden');
@@ -1210,24 +1447,25 @@
             let seats = 0;
             let luggage = 0;
             let stops = [];
+            let pool2Riders = [];
 
-            // Corridor 1 Grouping (Phone 1 and Phone 2)
-            if (pData[1].booked && pData[1].corridor === 1) {
-                seats += pData[1].seats;
-                luggage += pData[1].units;
-                stops.push({ name: pData[1].dest, km: pData[1].km, fare: pData[1].fare, rider: `${pData[1].name} (${pData[1].units}u)` });
-            }
-
-            if (pData[2].booked && pData[2].corridor === 1) {
-                seats += pData[2].seats;
-                luggage += pData[2].units;
-                stops.push({ name: pData[2].dest, km: pData[2].km, fare: pData[2].fare, rider: `${pData[2].name} (${pData[2].units}u)` });
-            }
+            // Primary Cab #1 (Rajesh Kumar - Corridor 1 - Pool 1)
+            [1, 2, 3].forEach(id => {
+                if (pData[id].booked) {
+                    if (pData[id].corridor === 1 && (pData[id].pool === 1 || !pData[id].pool)) {
+                        seats += pData[id].seats;
+                        luggage += pData[id].units;
+                        stops.push({ name: pData[id].dest, km: pData[id].km, fare: pData[id].fare, rider: `${pData[id].name} (${pData[id].units}u)` });
+                    } else if (pData[id].pool === 2) {
+                        pool2Riders.push({ name: pData[id].name, units: pData[id].units, dest: pData[id].dest });
+                    }
+                }
+            });
 
             // Sort stops monotonically (closest to furthest)
             stops.sort((a, b) => a.km - b.km);
 
-            // Update Dual Knapsack Bars
+            // Update Dual Knapsack Bars for Cab #1
             const seatPct = Math.min(100, Math.round((seats / 6) * 100));
             const bootPct = Math.min(100, Math.round((luggage / 6) * 100));
 
@@ -1242,13 +1480,9 @@
                 document.getElementById('hud-boot-bar').className = "bg-amber-400 h-full transition-all duration-500 animate-pulse";
                 bootStatus.innerHTML = "⭐ Trunk 100% Full (6/6u) • Knapsack Closed to Overflow!";
                 bootStatus.className = "text-[9px] text-amber-300 block font-bold";
-            } else if (luggage > 6) {
-                document.getElementById('hud-boot-bar').className = "bg-rose-500 h-full transition-all duration-500 animate-pulse";
-                bootStatus.innerHTML = "🚫 TRUNK OVERFLOW (>6u) • Second MPV Dispatched!";
-                bootStatus.className = "text-[9px] text-rose-400 block font-bold";
             } else if (luggage > 0) {
                 document.getElementById('hud-boot-bar').className = "bg-amber-400 h-full transition-all duration-500";
-                bootStatus.innerHTML = `✓ ${6 - luggage}u Remaining Trunk Space`;
+                bootStatus.innerHTML = `✓ ${6 - luggage}u Remaining Trunk Space (Safe)`;
                 bootStatus.className = "text-[9px] text-emerald-400 block font-bold";
             } else {
                 document.getElementById('hud-boot-bar').className = "bg-amber-400 h-full transition-all duration-500";
@@ -1256,10 +1490,23 @@
                 bootStatus.className = "text-[9px] text-emerald-400 block font-bold";
             }
 
+            // Pool #2 Fleet Scale-out Alert
+            const pool2Card = document.getElementById('hud-pool2-card');
+            const pool2Msg = document.getElementById('hud-pool2-msg');
+            if (pool2Riders.length > 0) {
+                if (pool2Card) pool2Card.classList.remove('hidden');
+                if (pool2Msg) {
+                    const desc = pool2Riders.map(r => `${r.name} (${r.units}u)`).join(', ');
+                    pool2Msg.innerText = `Suresh Gowda (KA 04 ME 4103) dispatched at Bay 5 for ${desc}. Both cabs operating with 0% boot overflow!`;
+                }
+            } else {
+                if (pool2Card) pool2Card.classList.add('hidden');
+            }
+
             // Update Monotonic Stops Container
             const stopsContainer = document.getElementById('hud-stops');
             if (stops.length === 0) {
-                stopsContainer.innerHTML = `<div class="p-2.5 rounded-lg bg-slate-900/60 border border-slate-700/60 text-slate-400 text-center text-[10px]">Awaiting curbside bookings from Phones 1 & 2...</div>`;
+                stopsContainer.innerHTML = `<div class="p-2.5 rounded-lg bg-slate-900/60 border border-slate-700/60 text-slate-400 text-center text-[10px]">Awaiting curbside bookings for Cab #1...</div>`;
             } else {
                 stopsContainer.innerHTML = stops.map((s, idx) => `
                     <div class="p-2 rounded-lg bg-slate-900 border border-emerald-500/30 flex justify-between items-center text-[11px]">
@@ -1401,16 +1648,21 @@
                 pData[id].phone = "";
                 pData[id].flight = "";
                 pData[id].booked = false;
+                pData[id].pool = 1;
                 
                 document.getElementById(`p${id}-name`).value = "";
                 document.getElementById(`p${id}-phone`).value = "";
                 document.getElementById(`p${id}-flight`).value = "";
 
+                closePoolFullModal(id);
                 logoutUser(id);
             }
             pData[1].cabin = 1; pData[1].checkin = 0; pData[1].units = 1;
             pData[2].cabin = 1; pData[2].checkin = 2; pData[2].units = 5;
             pData[3].cabin = 1; pData[3].checkin = 1; pData[3].units = 3;
+
+            const pool2Card = document.getElementById('hud-pool2-card');
+            if (pool2Card) pool2Card.classList.add('hidden');
 
             syncToDriverHUD();
             fetch(`${API_BASE}/reset`, { method: 'DELETE' }).catch(() => {});
