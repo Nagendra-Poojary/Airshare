@@ -89,6 +89,9 @@ The frontend will automatically connect to `http://localhost:8080/api`:
 | Method | Endpoint | Description |
 | :--- | :--- | :--- |
 | `GET` | `/api/status` | Engine health check & knapsack capacity bounds |
+| `POST` | `/api/auth/register` | Registers new user account with hashed password in PostgreSQL |
+| `POST` | `/api/auth/login` | Authenticates user credentials against PostgreSQL database |
+| `GET` | `/api/auth/users` | Lists registered platform accounts (for verification & demo) |
 | `GET` | `/api/corridors` | Returns 3 highway corridors with PostGIS GeoJSON geometries |
 | `POST` | `/api/simulate?count=25` | Injects synthetic curbside flyer events into PostgreSQL |
 | `POST` | `/api/add-rider` | Ingests a single curbside passenger request |

@@ -1,9 +1,16 @@
 C:\Users\DEEKSHITH\OneDrive\Desktop\Airshare\Airshare\backend\src\main\java\com\ewit\airshare\AirShareApplication.java
 C:\Users\DEEKSHITH\OneDrive\Desktop\Airshare\Airshare\backend\src\main\java\com\ewit\airshare\controller\AirShareController.java
+C:\Users\DEEKSHITH\OneDrive\Desktop\Airshare\Airshare\backend\src\main\java\com\ewit\airshare\controller\AuthController.java
 C:\Users\DEEKSHITH\OneDrive\Desktop\Airshare\Airshare\backend\src\main\java\com\ewit\airshare\dto\AddRiderRequest.java
+C:\Users\DEEKSHITH\OneDrive\Desktop\Airshare\Airshare\backend\src\main\java\com\ewit\airshare\dto\AuthResponse.java
+C:\Users\DEEKSHITH\OneDrive\Desktop\Airshare\Airshare\backend\src\main\java\com\ewit\airshare\dto\LoginRequest.java
+C:\Users\DEEKSHITH\OneDrive\Desktop\Airshare\Airshare\backend\src\main\java\com\ewit\airshare\dto\RegisterRequest.java
 C:\Users\DEEKSHITH\OneDrive\Desktop\Airshare\Airshare\backend\src\main\java\com\ewit\airshare\model\HighwayCorridor.java
 C:\Users\DEEKSHITH\OneDrive\Desktop\Airshare\Airshare\backend\src\main\java\com\ewit\airshare\model\RideRequest.java
+C:\Users\DEEKSHITH\OneDrive\Desktop\Airshare\Airshare\backend\src\main\java\com\ewit\airshare\model\User.java
 C:\Users\DEEKSHITH\OneDrive\Desktop\Airshare\Airshare\backend\src\main\java\com\ewit\airshare\repository\HighwayCorridorRepository.java
 C:\Users\DEEKSHITH\OneDrive\Desktop\Airshare\Airshare\backend\src\main\java\com\ewit\airshare\repository\RideRepository.java
+C:\Users\DEEKSHITH\OneDrive\Desktop\Airshare\Airshare\backend\src\main\java\com\ewit\airshare\repository\UserRepository.java
 C:\Users\DEEKSHITH\OneDrive\Desktop\Airshare\Airshare\backend\src\main\java\com\ewit\airshare\service\ClusteringEngineService.java
+C:\Users\DEEKSHITH\OneDrive\Desktop\Airshare\Airshare\backend\src\main\java\com\ewit\airshare\service\DatabaseInitializer.java
 C:\Users\DEEKSHITH\OneDrive\Desktop\Airshare\Airshare\backend\src\main\java\com\ewit\airshare\service\FlightSimulatorService.java

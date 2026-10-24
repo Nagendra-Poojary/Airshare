@@ -100,6 +100,11 @@
             </div>
         </div>
 
+        <!-- Database Connection Status Badge -->
+        <div id="dbStatusPill" class="flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-100 border border-slate-200 text-slate-600 text-[11px] font-mono transition-all">
+            <span id="dbDot" class="w-2 h-2 rounded-full bg-amber-400"></span>
+            <span id="dbText">PostgreSQL: Checking...</span>
+        </div>
 
     </header>
 
@@ -395,35 +400,170 @@
             }
         }
 
-        function handleSignIn(e) {
+        const API_BASE = "http://localhost:8085/api";
+
+        // Check Backend & PostgreSQL Connection
+        async function checkBackend() {
+            const pill = document.getElementById('dbStatusPill');
+            const dot = document.getElementById('dbDot');
+            const text = document.getElementById('dbText');
+            if (!pill || !dot || !text) return;
+
+            try {
+                const res = await fetch(`${API_BASE}/status`, { signal: AbortSignal.timeout(2000) });
+                if (res.ok) {
+                    dot.className = "w-2 h-2 rounded-full bg-emerald-500 animate-pulse";
+                    text.innerText = "PostgreSQL: Connected (Port 5434)";
+                    pill.className = "flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-300 text-emerald-700 text-[11px] font-mono transition-all";
+                } else {
+                    throw new Error("Backend not ok");
+                }
+            } catch (err) {
+                dot.className = "w-2 h-2 rounded-full bg-amber-400";
+                text.innerText = "PostgreSQL: Offline (Local Mode)";
+                pill.className = "flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-50 border border-amber-200 text-amber-700 text-[11px] font-mono transition-all";
+            }
+        }
+        checkBackend();
+        setInterval(checkBackend, 5000);
+
+        async function handleSignIn(e) {
             e.preventDefault();
             const btn = document.getElementById('signInBtn');
             const role = document.querySelector('input[name="signInRole"]:checked').value;
+            const identifier = document.getElementById('signInIdentifier').value.trim();
+            const password = document.getElementById('signInPassword').value;
             
             btn.disabled = true;
-            btn.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin"></i> Signing In...`;
+            btn.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin"></i> Verifying with Database...`;
 
-            showAlert("Credentials verified. Redirecting...", true);
+            try {
+                const res = await fetch(`${API_BASE}/auth/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ identifier, password, role })
+                });
+                const data = await res.json();
 
-            setTimeout(() => {
-                window.location.href = `interface.html?role=${role}`;
-            }, 700);
+                if (res.ok && data.success) {
+                    const userData = {
+                        id: data.userId,
+                        name: data.name,
+                        email: data.email,
+                        phone: data.phone,
+                        role: data.role || role,
+                        flightNo: '6E-204',
+                        gate: 'Terminal 1 • Curb Gate 2',
+                        isLoggedIn: true
+                    };
+                    localStorage.setItem('airshare_user', JSON.stringify(userData));
+                    sessionStorage.setItem('airshare_user', JSON.stringify(userData));
+
+                    showAlert(`Welcome back, ${data.name}! Verified with PostgreSQL database.`, true);
+
+                    setTimeout(() => {
+                        window.location.href = `interface.html?role=${encodeURIComponent(data.role || role)}&name=${encodeURIComponent(data.name)}`;
+                    }, 500);
+                    return;
+                } else {
+                    showAlert(data.message || "Invalid credentials. Please verify your details.", false);
+                    btn.disabled = false;
+                    btn.innerHTML = `<span>Sign In</span> <i class="fa-solid fa-arrow-right text-[10px]"></i>`;
+                    return;
+                }
+            } catch (err) {
+                console.warn("Backend offline, falling back to local mode:", err);
+                let displayName = identifier;
+                if (identifier.includes('@')) {
+                    const prefix = identifier.split('@')[0];
+                    displayName = prefix.charAt(0).toUpperCase() + prefix.slice(1);
+                }
+
+                const userData = {
+                    name: displayName,
+                    identifier: identifier,
+                    role: role,
+                    flightNo: '6E-204',
+                    gate: 'Terminal 1 • Curb Gate 2',
+                    isLoggedIn: true
+                };
+                localStorage.setItem('airshare_user', JSON.stringify(userData));
+                sessionStorage.setItem('airshare_user', JSON.stringify(userData));
+
+                showAlert(`Backend offline: Signed in in local offline mode as ${displayName}`, true);
+
+                setTimeout(() => {
+                    window.location.href = `interface.html?role=${role}&name=${encodeURIComponent(displayName)}`;
+                }, 600);
+            }
         }
 
-        function handleSignUp(e) {
+        async function handleSignUp(e) {
             e.preventDefault();
             const btn = document.getElementById('signUpBtn');
             const role = document.querySelector('input[name="signUpRole"]:checked').value;
-            const name = document.getElementById('signUpName').value;
+            const name = document.getElementById('signUpName').value.trim();
+            const email = document.getElementById('signUpEmail').value.trim();
+            const phone = document.getElementById('signUpPhone').value.trim();
+            const password = document.getElementById('signUpPassword').value;
 
             btn.disabled = true;
-            btn.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin"></i> Creating Account...`;
+            btn.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin"></i> Saving to PostgreSQL...`;
 
-            showAlert(`Account created for ${name}! Opening platform...`, true);
+            try {
+                const res = await fetch(`${API_BASE}/auth/register`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, email, phone, password, role })
+                });
+                const data = await res.json();
 
-            setTimeout(() => {
-                window.location.href = `interface.html?role=${role}`;
-            }, 700);
+                if (res.ok && data.success) {
+                    const userData = {
+                        id: data.userId,
+                        name: data.name,
+                        email: data.email,
+                        phone: data.phone,
+                        role: data.role || role,
+                        flightNo: '6E-204',
+                        gate: 'Terminal 1 • Curb Gate 2',
+                        isLoggedIn: true
+                    };
+                    localStorage.setItem('airshare_user', JSON.stringify(userData));
+                    sessionStorage.setItem('airshare_user', JSON.stringify(userData));
+
+                    showAlert(`Account saved to PostgreSQL for ${name}! Redirecting...`, true);
+
+                    setTimeout(() => {
+                        window.location.href = `interface.html?role=${encodeURIComponent(data.role || role)}&name=${encodeURIComponent(name)}`;
+                    }, 500);
+                    return;
+                } else {
+                    showAlert(data.message || "Could not create account. Please try again.", false);
+                    btn.disabled = false;
+                    btn.innerHTML = `<span>Create Account</span> <i class="fa-solid fa-check text-[10px]"></i>`;
+                    return;
+                }
+            } catch (err) {
+                console.warn("Backend offline, saving locally:", err);
+                const userData = {
+                    name: name,
+                    email: email,
+                    phone: phone,
+                    role: role,
+                    flightNo: '6E-204',
+                    gate: 'Terminal 1 • Curb Gate 2',
+                    isLoggedIn: true
+                };
+                localStorage.setItem('airshare_user', JSON.stringify(userData));
+                sessionStorage.setItem('airshare_user', JSON.stringify(userData));
+
+                showAlert(`Backend offline: Account created locally for ${name}!`, true);
+
+                setTimeout(() => {
+                    window.location.href = `interface.html?role=${role}&name=${encodeURIComponent(name)}`;
+                }, 600);
+            }
         }
 
         // AUTO LOCATION FETCHER WITH PERMISSION

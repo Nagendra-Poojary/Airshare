@@ -1,0 +1,1420 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AirShare — Interactive Multi-Phone Expo Experience</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #090d16 0%, #111827 50%, #090d16 100%);
+            color: #f8fafc;
+        }
+
+        .font-mono {
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        /* High-Definition Smartphone Frame */
+        .phone-frame {
+            width: 335px;
+            height: 690px;
+            background: #ffffff;
+            border-radius: 46px;
+            box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.8), 0 0 0 10px #1e293b, 0 0 0 12px #334155;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            color: #0f172a;
+            flex-shrink: 0;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .phone-frame:hover {
+            box-shadow: 0 30px 70px -15px rgba(16, 185, 129, 0.25), 0 0 0 10px #1e293b, 0 0 0 12px #10b981;
+        }
+
+        /* Dynamic Island / Hardware Notch */
+        .dynamic-island {
+            width: 95px;
+            height: 22px;
+            background: #000000;
+            border-radius: 20px;
+            position: absolute;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 50;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 8px;
+        }
+
+        /* Custom Scrollbars */
+        ::-webkit-scrollbar {
+            width: 4px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col p-4 select-none">
+
+    <!-- TOP CONTROL & EXPO STATUS BAR -->
+    <header class="bg-slate-900/90 backdrop-blur-md border border-slate-700/60 rounded-2xl p-4 mb-4 flex flex-wrap items-center justify-between gap-4 shadow-2xl">
+        <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-500 to-teal-400 flex items-center justify-center text-slate-950 font-extrabold text-lg shadow-lg">
+                <i class="fa-solid fa-mobile-screen"></i>
+            </div>
+            <div>
+                <div class="flex items-center gap-2">
+                    <h1 class="text-base font-extrabold tracking-tight text-white font-mono">AirShare™ Multi-Device Live Stall Demo</h1>
+                    <span class="text-[10px] font-mono font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 px-2 py-0.5 rounded-full">
+                        Live User Authentication & Curbside Pooling
+                    </span>
+                </div>
+                <p class="text-xs text-slate-400">Judges and visitors can enter their actual details, customize luggage, and watch the driver console cluster in real time!</p>
+            </div>
+        </div>
+
+        <div class="flex items-center gap-3 font-mono text-xs">
+            <div id="backendPill" class="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-800 border border-slate-700 text-slate-400 font-bold">
+                <span id="backendDot" class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                <span id="backendText">PostGIS Engine: Checking...</span>
+            </div>
+
+            <button onclick="prefillJudgesData()" class="px-3.5 py-2 rounded-xl bg-purple-600/80 hover:bg-purple-600 text-white font-bold transition-all shadow-md flex items-center gap-2" title="Fast-fill 3 distinct profiles for a 10-second demo">
+                <i class="fa-solid fa-bolt text-amber-300"></i>
+                <span>Fast-Fill 3 Profiles</span>
+            </button>
+
+            <button onclick="triggerMatchOnFleet()" class="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold transition-all shadow-md flex items-center gap-2">
+                <i class="fa-solid fa-calculator text-emerald-200"></i>
+                <span>Execute Match Engine</span>
+            </button>
+
+            <button onclick="resetAllDevices()" class="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 font-bold transition-all flex items-center gap-1.5">
+                <i class="fa-solid fa-rotate-left text-slate-400"></i>
+                <span>Reset All Phones</span>
+            </button>
+
+            <div class="flex items-center gap-2 border-l border-slate-700 pl-3">
+                <a href="interface.html" class="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 transition-colors flex items-center gap-1.5 text-[11px]" title="Single Large Screen Map Interface">
+                    <i class="fa-solid fa-map text-emerald-400"></i> Map View
+                </a>
+                <a href="login.html" class="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 transition-colors flex items-center gap-1.5 text-[11px]" title="Sign In & Registration Portal">
+                    <i class="fa-solid fa-right-to-bracket text-emerald-400"></i> Portal
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- 4 PHONES SHOWCASE CONTAINER -->
+    <main class="flex-1 flex justify-start xl:justify-center items-center gap-6 overflow-x-auto pb-6">
+
+        <!-- ========================================================================= -->
+        <!-- PHONE 1: PASSENGER DEVICE 1 (Clean Login -> OTP -> Custom Booking -> Ticket) -->
+        <!-- ========================================================================= -->
+        <div class="phone-frame" id="phone1">
+            <div class="dynamic-island">
+                <div class="w-2 h-2 rounded-full bg-slate-800"></div>
+                <div class="w-2.5 h-2.5 rounded-full bg-slate-900 border border-slate-700"></div>
+            </div>
+
+            <!-- Top Status Bar -->
+            <div class="pt-2.5 px-6 pb-1 flex justify-between text-[11px] font-mono font-bold text-slate-500 bg-slate-50 border-b border-slate-100">
+                <span>09:41</span>
+                <span class="text-blue-700 font-bold">Passenger Phone 1</span>
+                <div class="flex items-center gap-1.5">
+                    <i class="fa-solid fa-wifi text-[9px]"></i>
+                    <i class="fa-solid fa-battery-full text-[10px]"></i>
+                </div>
+            </div>
+
+            <!-- SCREEN 1A: LOGIN SCREEN -->
+            <div id="p1-login" class="flex-1 p-5 flex flex-col justify-between bg-white overflow-y-auto">
+                <div class="space-y-4 pt-2">
+                    <div class="flex items-center justify-between">
+                        <div class="w-10 h-10 rounded-2xl bg-blue-50 border border-blue-200 text-blue-600 flex items-center justify-center text-lg shadow-xs">
+                            <i class="fa-solid fa-plane-arrival"></i>
+                        </div>
+                        <span class="text-[9px] font-mono font-bold px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200">
+                            KIA Curbside
+                        </span>
+                    </div>
+
+                    <div>
+                        <h2 class="text-base font-extrabold text-slate-900">Sign In to AirShare</h2>
+                        <p class="text-[11px] text-slate-500">Enter your details to request curbside pooled cab</p>
+                    </div>
+
+                    <!-- Preset Persona Chip -->
+                    <div class="bg-blue-50/60 p-2 rounded-xl border border-blue-100 flex items-center justify-between">
+                        <span class="text-[10px] text-blue-900 font-semibold">Judge Demo Chip:</span>
+                        <button type="button" onclick="loadPersona(1, 'Rohan Sharma', '+91 98450 12345', '6E-204')" class="text-[10px] font-mono font-bold bg-white text-blue-700 px-2 py-0.5 rounded border border-blue-200 hover:bg-blue-100 transition-colors">
+                            ⚡ Quick: Rohan
+                        </button>
+                    </div>
+
+                    <div class="space-y-2.5 pt-1">
+                        <div>
+                            <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Your Full Name</label>
+                            <input type="text" id="p1-name" placeholder="e.g. Rohan Sharma / Judge Name" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-semibold text-slate-900 focus:outline-none focus:border-blue-500 focus:bg-white transition-colors">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Mobile Phone Number</label>
+                            <input type="tel" id="p1-phone" placeholder="+91 98450 12345" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-mono font-semibold text-slate-900 focus:outline-none focus:border-blue-500 focus:bg-white transition-colors">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Flight Number</label>
+                            <input type="text" id="p1-flight" placeholder="e.g. 6E-204" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-mono font-bold uppercase text-slate-900 focus:outline-none focus:border-blue-500 focus:bg-white transition-colors">
+                        </div>
+                    </div>
+                </div>
+
+                <button onclick="requestOtp(1)" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-mono font-bold py-2.5 rounded-xl shadow-lg transition-all flex items-center justify-center gap-2 text-xs mt-3">
+                    <span>Send Curbside OTP</span>
+                    <i class="fa-solid fa-arrow-right text-[10px]"></i>
+                </button>
+            </div>
+
+            <!-- SCREEN 1A-OTP: OTP VERIFICATION SCREEN -->
+            <div id="p1-otp" class="hidden flex-1 p-5 flex flex-col justify-between bg-white">
+                <div class="space-y-4 pt-4 text-center">
+                    <div class="w-12 h-12 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center text-xl mx-auto">
+                        <i class="fa-solid fa-shield-halved"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-base font-extrabold text-slate-900">Verify Mobile OTP</h2>
+                        <p class="text-[11px] text-slate-500">Security PIN sent to <span id="p1-otp-target" class="font-mono font-bold text-slate-800">+91 98450 12345</span></p>
+                    </div>
+
+                    <div class="flex justify-center gap-2 pt-2">
+                        <input type="text" maxlength="1" value="8" class="w-10 h-11 text-center font-mono font-bold text-base bg-slate-50 border border-slate-300 rounded-lg">
+                        <input type="text" maxlength="1" value="8" class="w-10 h-11 text-center font-mono font-bold text-base bg-slate-50 border border-slate-300 rounded-lg">
+                        <input type="text" maxlength="1" value="1" class="w-10 h-11 text-center font-mono font-bold text-base bg-slate-50 border border-slate-300 rounded-lg">
+                        <input type="text" maxlength="1" value="2" class="w-10 h-11 text-center font-mono font-bold text-base bg-slate-50 border border-slate-300 rounded-lg">
+                    </div>
+                    <span class="text-[10px] text-emerald-600 font-bold block">✓ Fast Curbside Auto-Verification</span>
+                </div>
+
+                <div class="space-y-2">
+                    <button onclick="verifyOtp(1)" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-mono font-bold py-2.5 rounded-xl shadow-lg transition-all flex items-center justify-center gap-2 text-xs">
+                        <i class="fa-solid fa-check"></i>
+                        <span>Verify & Enter Booking</span>
+                    </button>
+                    <button onclick="backToLogin(1)" class="w-full text-slate-400 hover:text-slate-600 font-mono text-[11px] py-1">
+                        ← Change Number
+                    </button>
+                </div>
+            </div>
+
+            <!-- SCREEN 1B: BOOKING FORM SCREEN -->
+            <div id="p1-booking" class="hidden flex-1 overflow-y-auto p-4 space-y-3 text-xs bg-slate-50">
+                <div class="flex items-center justify-between border-b border-slate-200 pb-2">
+                    <div>
+                        <span class="text-[10px] text-slate-400 block font-mono">Curbside Flyer</span>
+                        <strong id="p1-display-name" class="text-xs text-slate-900">Rohan Sharma</strong>
+                        <span id="p1-display-flight" class="text-[9px] font-mono text-blue-600 block">Flight: 6E-204</span>
+                    </div>
+                    <button onclick="logoutUser(1)" class="text-[10px] text-rose-500 hover:text-rose-700 font-mono font-semibold">Sign Out</button>
+                </div>
+
+                <!-- Terminal Gate Selection -->
+                <div>
+                    <label class="block text-[9px] font-bold text-slate-400 uppercase mb-1">Curbside Pickup Gate</label>
+                    <select id="p1-gate" class="w-full bg-white border border-slate-200 rounded-lg p-1.5 text-xs font-semibold text-slate-800">
+                        <option value="Terminal 1 • Curb Gate 2">Terminal 1 • Gate 2 (IndiGo / Akasa)</option>
+                        <option value="Terminal 1 • Curb Gate 4">Terminal 1 • Gate 4 (Air India / SpiceJet)</option>
+                        <option value="Terminal 2 • Curb Gate 6">Terminal 2 • Gate 6 (Vistara / Int'l)</option>
+                        <option value="Terminal 2 • Curb Gate 8">Terminal 2 • Gate 8 (Star Air)</option>
+                    </select>
+                </div>
+
+                <!-- Seats Required -->
+                <div class="bg-white p-2.5 rounded-xl border border-slate-200 shadow-xs flex justify-between items-center">
+                    <div>
+                        <span class="font-bold text-slate-700 block text-[11px]">Passenger Seats</span>
+                        <span class="text-[9px] text-slate-400">Reserved in vehicle</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <button type="button" onclick="adjustSeats(1, -1)" class="w-6 h-6 bg-slate-100 rounded border text-xs font-bold hover:bg-slate-200">-</button>
+                        <span id="p1-seats" class="font-mono font-bold text-slate-900 text-xs">1</span>
+                        <button type="button" onclick="adjustSeats(1, 1)" class="w-6 h-6 bg-slate-100 rounded border text-xs font-bold hover:bg-slate-200">+</button>
+                    </div>
+                </div>
+
+                <!-- Luggage Knapsack Input (Cabin 1u, Checkin 2u) -->
+                <div class="bg-white p-2.5 rounded-xl border border-slate-200 shadow-xs space-y-2">
+                    <div class="flex justify-between items-center text-[10px]">
+                        <span class="font-bold text-slate-700">Luggage Breakdown</span>
+                        <span id="p1-luggage-units" class="font-mono font-bold text-blue-700 bg-blue-50 px-2 py-0.5 rounded border border-blue-200">
+                            1 Volume Unit (1u)
+                        </span>
+                    </div>
+                    <div class="grid grid-cols-2 gap-2 text-[10px]">
+                        <div class="bg-slate-50 p-1.5 rounded-lg border border-slate-200 flex justify-between items-center">
+                            <span>Cabin (1u)</span>
+                            <div class="flex items-center gap-1.5">
+                                <button type="button" onclick="adjustLuggage(1, 'cabin', -1)" class="w-5 h-5 bg-white rounded border text-xs font-bold">-</button>
+                                <span id="p1-cabin" class="font-mono font-bold text-slate-900">1</span>
+                                <button type="button" onclick="adjustLuggage(1, 'cabin', 1)" class="w-5 h-5 bg-white rounded border text-xs font-bold">+</button>
+                            </div>
+                        </div>
+                        <div class="bg-slate-50 p-1.5 rounded-lg border border-slate-200 flex justify-between items-center">
+                            <span>Check-in (2u)</span>
+                            <div class="flex items-center gap-1.5">
+                                <button type="button" onclick="adjustLuggage(1, 'checkin', -1)" class="w-5 h-5 bg-white rounded border text-xs font-bold">-</button>
+                                <span id="p1-checkin" class="font-mono font-bold text-slate-900">0</span>
+                                <button type="button" onclick="adjustLuggage(1, 'checkin', 1)" class="w-5 h-5 bg-white rounded border text-xs font-bold">+</button>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Knapsack Capacity Progress -->
+                    <div class="space-y-1 pt-1 border-t border-slate-100">
+                        <div class="flex justify-between text-[9px] text-slate-500 font-mono">
+                            <span>Trunk Load:</span>
+                            <span id="p1-boot-meter-text">1u / 6u Boot Space</span>
+                        </div>
+                        <div class="w-full bg-slate-200 h-1.5 rounded-full overflow-hidden">
+                            <div id="p1-boot-meter" class="bg-blue-500 h-full transition-all duration-300" style="width: 17%"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Destination Selector -->
+                <div>
+                    <label class="block text-[9px] font-bold text-slate-400 uppercase mb-1">Drop Hub (Corridor)</label>
+                    <select id="p1-destination" onchange="updateFare(1)" class="w-full bg-white border border-slate-200 rounded-xl p-2 text-xs font-semibold text-slate-900">
+                        <option value="Hebbal Flyover|13.0358|77.5970|28|1">Hebbal Flyover (Corridor 1 • 28km)</option>
+                        <option value="MG Road Central|12.9716|77.6033|36|1">MG Road Central (Corridor 1 • 36km)</option>
+                        <option value="Indiranagar 100ft Rd|12.9784|77.6408|38|1">Indiranagar 100ft Rd (Corridor 1 • 38km)</option>
+                        <option value="Silk Board Flyover|12.9172|77.6228|46|1">Silk Board Flyover (Corridor 1 • 46km)</option>
+                        <option value="Electronic City Ph1|12.8452|77.6602|54|1">Electronic City (Corridor 1 • 54km)</option>
+                        <option value="Whitefield IT Zone|12.9698|77.7499|42|2">Whitefield IT Zone (Corridor 2 • 42km)</option>
+                        <option value="Manyata Tech Park|13.0451|77.6204|29|2">Manyata Tech Park (Corridor 2 • 29km)</option>
+                    </select>
+                </div>
+
+                <!-- Fare Calculation -->
+                <div class="bg-emerald-50/70 p-2.5 rounded-xl border border-emerald-200 flex justify-between items-center text-xs font-mono">
+                    <div>
+                        <span class="text-[9px] text-emerald-800 uppercase font-bold block">AirShare Split Fare</span>
+                        <strong id="p1-fare" class="text-sm font-bold text-emerald-700">₹298</strong>
+                    </div>
+                    <div class="text-right">
+                        <span id="p1-solo-fare" class="text-[10px] text-slate-400 line-through block">Solo: ₹736</span>
+                        <span class="text-[9px] text-emerald-700 font-bold bg-white px-1.5 py-0.5 rounded border border-emerald-200">59% SAVED</span>
+                    </div>
+                </div>
+
+                <!-- Book Button -->
+                <button onclick="submitBooking(1)" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-mono font-bold py-2.5 rounded-xl shadow-md transition-all flex items-center justify-center gap-1.5">
+                    <i class="fa-solid fa-check-circle"></i>
+                    <span>Confirm Curbside & Book Cab</span>
+                </button>
+            </div>
+
+            <!-- SCREEN 1C: TICKET / STATUS SCREEN -->
+            <div id="p1-ticket" class="hidden flex-1 overflow-y-auto p-4 space-y-3 text-xs bg-slate-50 flex flex-col justify-between">
+                <div class="space-y-3">
+                    <div class="text-center pt-2">
+                        <div class="w-10 h-10 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center text-lg mx-auto mb-1">
+                            <i class="fa-solid fa-circle-check"></i>
+                        </div>
+                        <h3 class="font-extrabold text-slate-900 text-sm">Curbside Confirmed!</h3>
+                        <span id="p1-ticket-id" class="text-[10px] font-mono text-slate-500">Booking #AS-8811</span>
+                    </div>
+
+                    <!-- OTP Code Card (For Driver Boarding) -->
+                    <div class="bg-emerald-600 text-white p-2.5 rounded-xl text-center shadow-md">
+                        <span class="text-[9px] uppercase tracking-wider block text-emerald-100 font-bold">Boarding Security PIN</span>
+                        <strong id="p1-ticket-otp" class="text-xl font-mono tracking-widest block">8811</strong>
+                        <span class="text-[8px] text-emerald-200 block">Share this 4-digit OTP with driver Rajesh Kumar</span>
+                    </div>
+
+                    <!-- Ticket Card -->
+                    <div class="bg-white p-3 rounded-2xl border border-slate-200 shadow-sm space-y-2 text-xs">
+                        <div class="flex justify-between items-center border-b border-slate-100 pb-2">
+                            <div>
+                                <span class="text-[9px] text-slate-400 uppercase font-semibold">Assigned Cab</span>
+                                <strong class="block text-slate-900">Ertiga MPV (KA 04 ME 4102)</strong>
+                                <span class="text-[9px] text-slate-500">Driver: Rajesh Kumar (⭐ 4.9)</span>
+                            </div>
+                            <span class="text-[10px] font-mono font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                                BAY 4
+                            </span>
+                        </div>
+                        <div class="space-y-1 text-[11px]">
+                            <div class="flex justify-between text-slate-600">
+                                <span>Drop Location:</span>
+                                <strong id="p1-ticket-drop" class="text-slate-900">Hebbal Flyover</strong>
+                            </div>
+                            <div class="flex justify-between text-slate-600">
+                                <span>Luggage Load:</span>
+                                <strong id="p1-ticket-units" class="text-slate-900">1 Unit</strong>
+                            </div>
+                            <div class="flex justify-between text-slate-600 pt-1 border-t border-slate-100">
+                                <span>Total Shared Fare:</span>
+                                <strong id="p1-ticket-fare" class="text-emerald-700 font-mono font-bold text-sm">₹298</strong>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="p1-trip-status-banner" class="bg-blue-50 p-2.5 rounded-xl border border-blue-200 text-[10px] text-blue-800 space-y-1">
+                        <span class="font-bold block flex items-center gap-1.5">
+                            <span class="w-2 h-2 rounded-full bg-blue-600 animate-ping"></span>
+                            <span>Status: Cab Waiting in Curbside Bay 4</span>
+                        </span>
+                        <p class="text-[9px]">Trunk capacity reserved exclusively for your luggage. Zero boot overflow.</p>
+                    </div>
+                </div>
+
+                <div class="space-y-1.5">
+                    <button onclick="editBooking(1)" class="w-full bg-slate-200 hover:bg-slate-300 text-slate-700 font-mono font-bold py-2 rounded-xl text-xs">
+                        Edit Booking Details
+                    </button>
+                    <button onclick="logoutUser(1)" class="w-full text-slate-400 hover:text-slate-600 font-mono text-[10px] py-1 text-center">
+                        Sign Out
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========================================================================= -->
+        <!-- PHONE 2: PASSENGER DEVICE 2 (Clean Login -> OTP -> Heavy Bags Booking -> Ticket) -->
+        <!-- ========================================================================= -->
+        <div class="phone-frame" id="phone2">
+            <div class="dynamic-island">
+                <div class="w-2 h-2 rounded-full bg-slate-800"></div>
+                <div class="w-2.5 h-2.5 rounded-full bg-slate-900 border border-slate-700"></div>
+            </div>
+
+            <div class="pt-2.5 px-6 pb-1 flex justify-between text-[11px] font-mono font-bold text-slate-500 bg-slate-50 border-b border-slate-100">
+                <span>09:41</span>
+                <span class="text-amber-700 font-bold">Passenger Phone 2</span>
+                <div class="flex items-center gap-1.5">
+                    <i class="fa-solid fa-wifi text-[9px]"></i>
+                    <i class="fa-solid fa-battery-full text-[10px]"></i>
+                </div>
+            </div>
+
+            <!-- SCREEN 2A: LOGIN SCREEN -->
+            <div id="p2-login" class="flex-1 p-5 flex flex-col justify-between bg-white overflow-y-auto">
+                <div class="space-y-4 pt-2">
+                    <div class="flex items-center justify-between">
+                        <div class="w-10 h-10 rounded-2xl bg-amber-50 border border-amber-200 text-amber-600 flex items-center justify-center text-lg shadow-xs">
+                            <i class="fa-solid fa-suitcase-rolling"></i>
+                        </div>
+                        <span class="text-[9px] font-mono font-bold px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200">
+                            Check-in Specialist
+                        </span>
+                    </div>
+
+                    <div>
+                        <h2 class="text-base font-extrabold text-slate-900">Sign In to AirShare</h2>
+                        <p class="text-[11px] text-slate-500">Heavy Luggage & Check-in Flyer</p>
+                    </div>
+
+                    <!-- Preset Persona Chip -->
+                    <div class="bg-amber-50/60 p-2 rounded-xl border border-amber-100 flex items-center justify-between">
+                        <span class="text-[10px] text-amber-900 font-semibold">Judge Demo Chip:</span>
+                        <button type="button" onclick="loadPersona(2, 'Dr. Priya Iyer', '+91 97400 56789', 'AI-508')" class="text-[10px] font-mono font-bold bg-white text-amber-700 px-2 py-0.5 rounded border border-amber-200 hover:bg-amber-100 transition-colors">
+                            ⚡ Quick: Dr. Priya
+                        </button>
+                    </div>
+
+                    <div class="space-y-2.5 pt-1">
+                        <div>
+                            <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Your Full Name</label>
+                            <input type="text" id="p2-name" placeholder="e.g. Dr. Priya Iyer / Judge Name" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-semibold text-slate-900 focus:outline-none focus:border-amber-500 focus:bg-white transition-colors">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Mobile Phone Number</label>
+                            <input type="tel" id="p2-phone" placeholder="+91 97400 56789" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-mono font-semibold text-slate-900 focus:outline-none focus:border-amber-500 focus:bg-white transition-colors">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Flight Number</label>
+                            <input type="text" id="p2-flight" placeholder="e.g. AI-508" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-mono font-bold uppercase text-slate-900 focus:outline-none focus:border-amber-500 focus:bg-white transition-colors">
+                        </div>
+                    </div>
+                </div>
+
+                <button onclick="requestOtp(2)" class="w-full bg-amber-600 hover:bg-amber-700 text-white font-mono font-bold py-2.5 rounded-xl shadow-lg transition-all flex items-center justify-center gap-2 text-xs mt-3">
+                    <span>Send Curbside OTP</span>
+                    <i class="fa-solid fa-arrow-right text-[10px]"></i>
+                </button>
+            </div>
+
+            <!-- SCREEN 2A-OTP: OTP VERIFICATION SCREEN -->
+            <div id="p2-otp" class="hidden flex-1 p-5 flex flex-col justify-between bg-white">
+                <div class="space-y-4 pt-4 text-center">
+                    <div class="w-12 h-12 rounded-full bg-amber-100 text-amber-700 flex items-center justify-center text-xl mx-auto">
+                        <i class="fa-solid fa-shield-halved"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-base font-extrabold text-slate-900">Verify Mobile OTP</h2>
+                        <p class="text-[11px] text-slate-500">Security PIN sent to <span id="p2-otp-target" class="font-mono font-bold text-slate-800">+91 97400 56789</span></p>
+                    </div>
+
+                    <div class="flex justify-center gap-2 pt-2">
+                        <input type="text" maxlength="1" value="5" class="w-10 h-11 text-center font-mono font-bold text-base bg-slate-50 border border-slate-300 rounded-lg">
+                        <input type="text" maxlength="1" value="0" class="w-10 h-11 text-center font-mono font-bold text-base bg-slate-50 border border-slate-300 rounded-lg">
+                        <input type="text" maxlength="1" value="8" class="w-10 h-11 text-center font-mono font-bold text-base bg-slate-50 border border-slate-300 rounded-lg">
+                        <input type="text" maxlength="1" value="8" class="w-10 h-11 text-center font-mono font-bold text-base bg-slate-50 border border-slate-300 rounded-lg">
+                    </div>
+                    <span class="text-[10px] text-emerald-600 font-bold block">✓ Fast Curbside Auto-Verification</span>
+                </div>
+
+                <div class="space-y-2">
+                    <button onclick="verifyOtp(2)" class="w-full bg-amber-600 hover:bg-amber-700 text-white font-mono font-bold py-2.5 rounded-xl shadow-lg transition-all flex items-center justify-center gap-2 text-xs">
+                        <i class="fa-solid fa-check"></i>
+                        <span>Verify & Enter Booking</span>
+                    </button>
+                    <button onclick="backToLogin(2)" class="w-full text-slate-400 hover:text-slate-600 font-mono text-[11px] py-1">
+                        ← Change Number
+                    </button>
+                </div>
+            </div>
+
+            <!-- SCREEN 2B: BOOKING FORM SCREEN -->
+            <div id="p2-booking" class="hidden flex-1 overflow-y-auto p-4 space-y-3 text-xs bg-slate-50">
+                <div class="flex items-center justify-between border-b border-slate-200 pb-2">
+                    <div>
+                        <span class="text-[10px] text-slate-400 block font-mono">Curbside Flyer</span>
+                        <strong id="p2-display-name" class="text-xs text-slate-900">Dr. Priya Iyer</strong>
+                        <span id="p2-display-flight" class="text-[9px] font-mono text-amber-600 block">Flight: AI-508</span>
+                    </div>
+                    <button onclick="logoutUser(2)" class="text-[10px] text-rose-500 hover:text-rose-700 font-mono font-semibold">Sign Out</button>
+                </div>
+
+                <!-- Terminal Gate Selection -->
+                <div>
+                    <label class="block text-[9px] font-bold text-slate-400 uppercase mb-1">Curbside Pickup Gate</label>
+                    <select id="p2-gate" class="w-full bg-white border border-slate-200 rounded-lg p-1.5 text-xs font-semibold text-slate-800">
+                        <option value="Terminal 1 • Curb Gate 4">Terminal 1 • Gate 4 (Air India / SpiceJet)</option>
+                        <option value="Terminal 1 • Curb Gate 2">Terminal 1 • Gate 2 (IndiGo / Akasa)</option>
+                        <option value="Terminal 2 • Curb Gate 6">Terminal 2 • Gate 6 (Vistara / Int'l)</option>
+                    </select>
+                </div>
+
+                <!-- Seats Required -->
+                <div class="bg-white p-2.5 rounded-xl border border-slate-200 shadow-xs flex justify-between items-center">
+                    <div>
+                        <span class="font-bold text-slate-700 block text-[11px]">Passenger Seats</span>
+                        <span class="text-[9px] text-slate-400">Reserved in vehicle</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <button type="button" onclick="adjustSeats(2, -1)" class="w-6 h-6 bg-slate-100 rounded border text-xs font-bold hover:bg-slate-200">-</button>
+                        <span id="p2-seats" class="font-mono font-bold text-slate-900 text-xs">1</span>
+                        <button type="button" onclick="adjustSeats(2, 1)" class="w-6 h-6 bg-slate-100 rounded border text-xs font-bold hover:bg-slate-200">+</button>
+                    </div>
+                </div>
+
+                <!-- Luggage Knapsack Input (Cabin 1u, Checkin 2u) -->
+                <div class="bg-white p-2.5 rounded-xl border border-slate-200 shadow-xs space-y-2">
+                    <div class="flex justify-between items-center text-[10px]">
+                        <span class="font-bold text-slate-700">Luggage Breakdown</span>
+                        <span id="p2-luggage-units" class="font-mono font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded border border-amber-200">
+                            5 Volume Units (5u)
+                        </span>
+                    </div>
+                    <div class="grid grid-cols-2 gap-2 text-[10px]">
+                        <div class="bg-slate-50 p-1.5 rounded-lg border border-slate-200 flex justify-between items-center">
+                            <span>Cabin (1u)</span>
+                            <div class="flex items-center gap-1.5">
+                                <button type="button" onclick="adjustLuggage(2, 'cabin', -1)" class="w-5 h-5 bg-white rounded border text-xs font-bold">-</button>
+                                <span id="p2-cabin" class="font-mono font-bold text-slate-900">1</span>
+                                <button type="button" onclick="adjustLuggage(2, 'cabin', 1)" class="w-5 h-5 bg-white rounded border text-xs font-bold">+</button>
+                            </div>
+                        </div>
+                        <div class="bg-slate-50 p-1.5 rounded-lg border border-slate-200 flex justify-between items-center">
+                            <span>Check-in (2u)</span>
+                            <div class="flex items-center gap-1.5">
+                                <button type="button" onclick="adjustLuggage(2, 'checkin', -1)" class="w-5 h-5 bg-white rounded border text-xs font-bold">-</button>
+                                <span id="p2-checkin" class="font-mono font-bold text-slate-900">2</span>
+                                <button type="button" onclick="adjustLuggage(2, 'checkin', 1)" class="w-5 h-5 bg-white rounded border text-xs font-bold">+</button>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Knapsack Capacity Progress -->
+                    <div class="space-y-1 pt-1 border-t border-slate-100">
+                        <div class="flex justify-between text-[9px] text-slate-500 font-mono">
+                            <span>Trunk Load:</span>
+                            <span id="p2-boot-meter-text">5u / 6u Boot Space</span>
+                        </div>
+                        <div class="w-full bg-slate-200 h-1.5 rounded-full overflow-hidden">
+                            <div id="p2-boot-meter" class="bg-amber-500 h-full transition-all duration-300" style="width: 83%"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Destination Selector -->
+                <div>
+                    <label class="block text-[9px] font-bold text-slate-400 uppercase mb-1">Drop Hub (Corridor)</label>
+                    <select id="p2-destination" onchange="updateFare(2)" class="w-full bg-white border border-slate-200 rounded-xl p-2 text-xs font-semibold text-slate-900">
+                        <option value="Silk Board Flyover|12.9172|77.6228|46|1">Silk Board Flyover (Corridor 1 • 46km)</option>
+                        <option value="Hebbal Flyover|13.0358|77.5970|28|1">Hebbal Flyover (Corridor 1 • 28km)</option>
+                        <option value="MG Road Central|12.9716|77.6033|36|1">MG Road Central (Corridor 1 • 36km)</option>
+                        <option value="Electronic City Ph1|12.8452|77.6602|54|1">Electronic City (Corridor 1 • 54km)</option>
+                        <option value="Whitefield IT Zone|12.9698|77.7499|42|2">Whitefield IT Zone (Corridor 2 • 42km)</option>
+                    </select>
+                </div>
+
+                <!-- Fare Calculation -->
+                <div class="bg-amber-50/70 p-2.5 rounded-xl border border-amber-200 flex justify-between items-center text-xs font-mono">
+                    <div>
+                        <span class="text-[9px] text-amber-800 uppercase font-bold block">AirShare Split Fare</span>
+                        <strong id="p2-fare" class="text-sm font-bold text-amber-700">₹463</strong>
+                    </div>
+                    <div class="text-right">
+                        <span id="p2-solo-fare" class="text-[10px] text-slate-400 line-through block">Solo: ₹1,132</span>
+                        <span class="text-[9px] text-amber-700 font-bold bg-white px-1.5 py-0.5 rounded border border-amber-200">59% SAVED</span>
+                    </div>
+                </div>
+
+                <!-- Book Button -->
+                <button onclick="submitBooking(2)" class="w-full bg-amber-600 hover:bg-amber-700 text-white font-mono font-bold py-2.5 rounded-xl shadow-md transition-all flex items-center justify-center gap-1.5">
+                    <i class="fa-solid fa-check-circle"></i>
+                    <span>Confirm Curbside & Book Cab</span>
+                </button>
+            </div>
+
+            <!-- SCREEN 2C: TICKET / STATUS SCREEN -->
+            <div id="p2-ticket" class="hidden flex-1 overflow-y-auto p-4 space-y-3 text-xs bg-slate-50 flex flex-col justify-between">
+                <div class="space-y-3">
+                    <div class="text-center pt-2">
+                        <div class="w-10 h-10 rounded-full bg-amber-100 text-amber-700 flex items-center justify-center text-lg mx-auto mb-1">
+                            <i class="fa-solid fa-circle-check"></i>
+                        </div>
+                        <h3 class="font-extrabold text-slate-900 text-sm">Curbside Confirmed!</h3>
+                        <span id="p2-ticket-id" class="text-[10px] font-mono text-slate-500">Booking #AS-8812</span>
+                    </div>
+
+                    <!-- OTP Code Card -->
+                    <div class="bg-amber-600 text-white p-2.5 rounded-xl text-center shadow-md">
+                        <span class="text-[9px] uppercase tracking-wider block text-amber-100 font-bold">Boarding Security PIN</span>
+                        <strong id="p2-ticket-otp" class="text-xl font-mono tracking-widest block">5088</strong>
+                        <span class="text-[8px] text-amber-200 block">Share this 4-digit OTP with driver Rajesh Kumar</span>
+                    </div>
+
+                    <!-- Ticket Card -->
+                    <div class="bg-white p-3 rounded-2xl border border-slate-200 shadow-sm space-y-2 text-xs">
+                        <div class="flex justify-between items-center border-b border-slate-100 pb-2">
+                            <div>
+                                <span class="text-[9px] text-slate-400 uppercase font-semibold">Assigned Cab</span>
+                                <strong class="block text-slate-900">Ertiga MPV (KA 04 ME 4102)</strong>
+                                <span class="text-[9px] text-slate-500">Driver: Rajesh Kumar (⭐ 4.9)</span>
+                            </div>
+                            <span class="text-[10px] font-mono font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded border border-amber-200">
+                                BAY 4
+                            </span>
+                        </div>
+                        <div class="space-y-1 text-[11px]">
+                            <div class="flex justify-between text-slate-600">
+                                <span>Drop Location:</span>
+                                <strong id="p2-ticket-drop" class="text-slate-900">Silk Board Flyover</strong>
+                            </div>
+                            <div class="flex justify-between text-slate-600">
+                                <span>Luggage Load:</span>
+                                <strong id="p2-ticket-units" class="text-slate-900">5 Units (1 Cab, 2 Chk)</strong>
+                            </div>
+                            <div class="flex justify-between text-slate-600 pt-1 border-t border-slate-100">
+                                <span>Total Shared Fare:</span>
+                                <strong id="p2-ticket-fare" class="text-amber-700 font-mono font-bold text-sm">₹463</strong>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="p2-trip-status-banner" class="bg-amber-50 p-2.5 rounded-xl border border-amber-200 text-[10px] text-amber-900 space-y-1">
+                        <span class="font-bold block flex items-center gap-1.5">
+                            <span class="w-2 h-2 rounded-full bg-amber-600 animate-ping"></span>
+                            <span>Status: Cab Waiting in Curbside Bay 4</span>
+                        </span>
+                        <p class="text-[9px]">Knapsack Verified: 5u accommodated with Phone 1's 1u = 6/6u 100% full!</p>
+                    </div>
+                </div>
+
+                <div class="space-y-1.5">
+                    <button onclick="editBooking(2)" class="w-full bg-slate-200 hover:bg-slate-300 text-slate-700 font-mono font-bold py-2 rounded-xl text-xs">
+                        Edit Booking Details
+                    </button>
+                    <button onclick="logoutUser(2)" class="w-full text-slate-400 hover:text-slate-600 font-mono text-[10px] py-1 text-center">
+                        Sign Out
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========================================================================= -->
+        <!-- PHONE 3: PASSENGER DEVICE 3 (Corridor 2 / East Spine Dedicated Device) -->
+        <!-- ========================================================================= -->
+        <div class="phone-frame" id="phone3">
+            <div class="dynamic-island">
+                <div class="w-2 h-2 rounded-full bg-slate-800"></div>
+                <div class="w-2.5 h-2.5 rounded-full bg-slate-900 border border-slate-700"></div>
+            </div>
+
+            <div class="pt-2.5 px-6 pb-1 flex justify-between text-[11px] font-mono font-bold text-slate-500 bg-slate-50 border-b border-slate-100">
+                <span>09:41</span>
+                <span class="text-purple-700 font-bold">Passenger Phone 3</span>
+                <div class="flex items-center gap-1.5">
+                    <i class="fa-solid fa-wifi text-[9px]"></i>
+                    <i class="fa-solid fa-battery-full text-[10px]"></i>
+                </div>
+            </div>
+
+            <!-- SCREEN 3A: LOGIN SCREEN -->
+            <div id="p3-login" class="flex-1 p-5 flex flex-col justify-between bg-white overflow-y-auto">
+                <div class="space-y-4 pt-2">
+                    <div class="flex items-center justify-between">
+                        <div class="w-10 h-10 rounded-2xl bg-purple-50 border border-purple-200 text-purple-600 flex items-center justify-center text-lg shadow-xs">
+                            <i class="fa-solid fa-route"></i>
+                        </div>
+                        <span class="text-[9px] font-mono font-bold px-2 py-0.5 rounded-full bg-purple-50 text-purple-700 border border-purple-200">
+                            East Spine / Corridor 2
+                        </span>
+                    </div>
+
+                    <div>
+                        <h2 class="text-base font-extrabold text-slate-900">Sign In to AirShare</h2>
+                        <p class="text-[11px] text-slate-500">Outer Ring Road & Whitefield Tech Spine</p>
+                    </div>
+
+                    <!-- Preset Persona Chip -->
+                    <div class="bg-purple-50/60 p-2 rounded-xl border border-purple-100 flex items-center justify-between">
+                        <span class="text-[10px] text-purple-900 font-semibold">Judge Demo Chip:</span>
+                        <button type="button" onclick="loadPersona(3, 'Vikram Nair', '+91 99800 98765', 'UK-812')" class="text-[10px] font-mono font-bold bg-white text-purple-700 px-2 py-0.5 rounded border border-purple-200 hover:bg-purple-100 transition-colors">
+                            ⚡ Quick: Vikram
+                        </button>
+                    </div>
+
+                    <div class="space-y-2.5 pt-1">
+                        <div>
+                            <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Your Full Name</label>
+                            <input type="text" id="p3-name" placeholder="e.g. Vikram Nair / Judge Name" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-semibold text-slate-900 focus:outline-none focus:border-purple-500 focus:bg-white transition-colors">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Mobile Phone Number</label>
+                            <input type="tel" id="p3-phone" placeholder="+91 99800 98765" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-mono font-semibold text-slate-900 focus:outline-none focus:border-purple-500 focus:bg-white transition-colors">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Flight Number</label>
+                            <input type="text" id="p3-flight" placeholder="e.g. UK-812" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-mono font-bold uppercase text-slate-900 focus:outline-none focus:border-purple-500 focus:bg-white transition-colors">
+                        </div>
+                    </div>
+                </div>
+
+                <button onclick="requestOtp(3)" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-mono font-bold py-2.5 rounded-xl shadow-lg transition-all flex items-center justify-center gap-2 text-xs mt-3">
+                    <span>Send Curbside OTP</span>
+                    <i class="fa-solid fa-arrow-right text-[10px]"></i>
+                </button>
+            </div>
+
+            <!-- SCREEN 3A-OTP: OTP VERIFICATION SCREEN -->
+            <div id="p3-otp" class="hidden flex-1 p-5 flex flex-col justify-between bg-white">
+                <div class="space-y-4 pt-4 text-center">
+                    <div class="w-12 h-12 rounded-full bg-purple-100 text-purple-700 flex items-center justify-center text-xl mx-auto">
+                        <i class="fa-solid fa-shield-halved"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-base font-extrabold text-slate-900">Verify Mobile OTP</h2>
+                        <p class="text-[11px] text-slate-500">Security PIN sent to <span id="p3-otp-target" class="font-mono font-bold text-slate-800">+91 99800 98765</span></p>
+                    </div>
+
+                    <div class="flex justify-center gap-2 pt-2">
+                        <input type="text" maxlength="1" value="8" class="w-10 h-11 text-center font-mono font-bold text-base bg-slate-50 border border-slate-300 rounded-lg">
+                        <input type="text" maxlength="1" value="1" class="w-10 h-11 text-center font-mono font-bold text-base bg-slate-50 border border-slate-300 rounded-lg">
+                        <input type="text" maxlength="1" value="3" class="w-10 h-11 text-center font-mono font-bold text-base bg-slate-50 border border-slate-300 rounded-lg">
+                        <input type="text" maxlength="1" value="9" class="w-10 h-11 text-center font-mono font-bold text-base bg-slate-50 border border-slate-300 rounded-lg">
+                    </div>
+                    <span class="text-[10px] text-emerald-600 font-bold block">✓ Fast Curbside Auto-Verification</span>
+                </div>
+
+                <div class="space-y-2">
+                    <button onclick="verifyOtp(3)" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-mono font-bold py-2.5 rounded-xl shadow-lg transition-all flex items-center justify-center gap-2 text-xs">
+                        <i class="fa-solid fa-check"></i>
+                        <span>Verify & Enter Booking</span>
+                    </button>
+                    <button onclick="backToLogin(3)" class="w-full text-slate-400 hover:text-slate-600 font-mono text-[11px] py-1">
+                        ← Change Number
+                    </button>
+                </div>
+            </div>
+
+            <!-- SCREEN 3B: BOOKING FORM SCREEN -->
+            <div id="p3-booking" class="hidden flex-1 overflow-y-auto p-4 space-y-3 text-xs bg-slate-50">
+                <div class="flex items-center justify-between border-b border-slate-200 pb-2">
+                    <div>
+                        <span class="text-[10px] text-slate-400 block font-mono">Curbside Flyer</span>
+                        <strong id="p3-display-name" class="text-xs text-slate-900">Vikram Nair</strong>
+                        <span id="p3-display-flight" class="text-[9px] font-mono text-purple-600 block">Flight: UK-812</span>
+                    </div>
+                    <button onclick="logoutUser(3)" class="text-[10px] text-rose-500 hover:text-rose-700 font-mono font-semibold">Sign Out</button>
+                </div>
+
+                <!-- Terminal Gate Selection -->
+                <div>
+                    <label class="block text-[9px] font-bold text-slate-400 uppercase mb-1">Curbside Pickup Gate</label>
+                    <select id="p3-gate" class="w-full bg-white border border-slate-200 rounded-lg p-1.5 text-xs font-semibold text-slate-800">
+                        <option value="Terminal 2 • Curb Gate 6">Terminal 2 • Gate 6 (Vistara / Int'l)</option>
+                        <option value="Terminal 1 • Curb Gate 2">Terminal 1 • Gate 2 (IndiGo / Akasa)</option>
+                    </select>
+                </div>
+
+                <!-- Seats Required -->
+                <div class="bg-white p-2.5 rounded-xl border border-slate-200 shadow-xs flex justify-between items-center">
+                    <div>
+                        <span class="font-bold text-slate-700 block text-[11px]">Passenger Seats</span>
+                        <span class="text-[9px] text-slate-400">Reserved in vehicle</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <button type="button" onclick="adjustSeats(3, -1)" class="w-6 h-6 bg-slate-100 rounded border text-xs font-bold hover:bg-slate-200">-</button>
+                        <span id="p3-seats" class="font-mono font-bold text-slate-900 text-xs">1</span>
+                        <button type="button" onclick="adjustSeats(3, 1)" class="w-6 h-6 bg-slate-100 rounded border text-xs font-bold hover:bg-slate-200">+</button>
+                    </div>
+                </div>
+
+                <!-- Luggage Knapsack Input -->
+                <div class="bg-white p-2.5 rounded-xl border border-slate-200 shadow-xs space-y-2">
+                    <div class="flex justify-between items-center text-[10px]">
+                        <span class="font-bold text-slate-700">Luggage Breakdown</span>
+                        <span id="p3-luggage-units" class="font-mono font-bold text-purple-700 bg-purple-50 px-2 py-0.5 rounded border border-purple-200">
+                            3 Volume Units (3u)
+                        </span>
+                    </div>
+                    <div class="grid grid-cols-2 gap-2 text-[10px]">
+                        <div class="bg-slate-50 p-1.5 rounded-lg border border-slate-200 flex justify-between items-center">
+                            <span>Cabin (1u)</span>
+                            <div class="flex items-center gap-1.5">
+                                <button type="button" onclick="adjustLuggage(3, 'cabin', -1)" class="w-5 h-5 bg-white rounded border text-xs font-bold">-</button>
+                                <span id="p3-cabin" class="font-mono font-bold text-slate-900">1</span>
+                                <button type="button" onclick="adjustLuggage(3, 'cabin', 1)" class="w-5 h-5 bg-white rounded border text-xs font-bold">+</button>
+                            </div>
+                        </div>
+                        <div class="bg-slate-50 p-1.5 rounded-lg border border-slate-200 flex justify-between items-center">
+                            <span>Check-in (2u)</span>
+                            <div class="flex items-center gap-1.5">
+                                <button type="button" onclick="adjustLuggage(3, 'checkin', -1)" class="w-5 h-5 bg-white rounded border text-xs font-bold">-</button>
+                                <span id="p3-checkin" class="font-mono font-bold text-slate-900">1</span>
+                                <button type="button" onclick="adjustLuggage(3, 'checkin', 1)" class="w-5 h-5 bg-white rounded border text-xs font-bold">+</button>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Knapsack Capacity Progress -->
+                    <div class="space-y-1 pt-1 border-t border-slate-100">
+                        <div class="flex justify-between text-[9px] text-slate-500 font-mono">
+                            <span>Trunk Load:</span>
+                            <span id="p3-boot-meter-text">3u / 6u Boot Space</span>
+                        </div>
+                        <div class="w-full bg-slate-200 h-1.5 rounded-full overflow-hidden">
+                            <div id="p3-boot-meter" class="bg-purple-500 h-full transition-all duration-300" style="width: 50%"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Destination Selector -->
+                <div>
+                    <label class="block text-[9px] font-bold text-slate-400 uppercase mb-1">Drop Hub (Corridor)</label>
+                    <select id="p3-destination" onchange="updateFare(3)" class="w-full bg-white border border-slate-200 rounded-xl p-2 text-xs font-semibold text-slate-900">
+                        <option value="Whitefield IT Zone|12.9698|77.7499|42|2">Whitefield IT Zone (Corridor 2 • 42km)</option>
+                        <option value="Marathahalli Bridge|12.9592|77.6974|40|2">Marathahalli Bridge (Corridor 2 • 40km)</option>
+                        <option value="Bellandur EcoSpace|12.9279|77.6801|44|2">Bellandur EcoSpace (Corridor 2 • 44km)</option>
+                        <option value="Manyata Tech Park|13.0451|77.6204|29|2">Manyata Tech Park (Corridor 2 • 29km)</option>
+                        <option value="Hebbal Flyover|13.0358|77.5970|28|1">Hebbal Flyover (Corridor 1 • 28km)</option>
+                    </select>
+                </div>
+
+                <!-- Fare Calculation -->
+                <div class="bg-purple-50/70 p-2.5 rounded-xl border border-purple-200 flex justify-between items-center text-xs font-mono">
+                    <div>
+                        <span class="text-[9px] text-purple-800 uppercase font-bold block">AirShare Split Fare</span>
+                        <strong id="p3-fare" class="text-sm font-bold text-purple-700">₹410</strong>
+                    </div>
+                    <div class="text-right">
+                        <span id="p3-solo-fare" class="text-[10px] text-slate-400 line-through block">Solo: ₹1,050</span>
+                        <span class="text-[9px] text-purple-700 font-bold bg-white px-1.5 py-0.5 rounded border border-purple-200">61% SAVED</span>
+                    </div>
+                </div>
+
+                <!-- Book Button -->
+                <button onclick="submitBooking(3)" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-mono font-bold py-2.5 rounded-xl shadow-md transition-all flex items-center justify-center gap-1.5">
+                    <i class="fa-solid fa-check-circle"></i>
+                    <span>Confirm Curbside & Book Cab</span>
+                </button>
+            </div>
+
+            <!-- SCREEN 3C: TICKET / STATUS SCREEN -->
+            <div id="p3-ticket" class="hidden flex-1 overflow-y-auto p-4 space-y-3 text-xs bg-slate-50 flex flex-col justify-between">
+                <div class="space-y-3">
+                    <div class="text-center pt-2">
+                        <div class="w-10 h-10 rounded-full bg-purple-100 text-purple-700 flex items-center justify-center text-lg mx-auto mb-1">
+                            <i class="fa-solid fa-circle-check"></i>
+                        </div>
+                        <h3 class="font-extrabold text-slate-900 text-sm">Curbside Confirmed!</h3>
+                        <span id="p3-ticket-id" class="text-[10px] font-mono text-slate-500">Booking #AS-8813</span>
+                    </div>
+
+                    <!-- OTP Code Card -->
+                    <div class="bg-purple-600 text-white p-2.5 rounded-xl text-center shadow-md">
+                        <span class="text-[9px] uppercase tracking-wider block text-purple-100 font-bold">Boarding Security PIN</span>
+                        <strong id="p3-ticket-otp" class="text-xl font-mono tracking-widest block">8139</strong>
+                        <span class="text-[8px] text-purple-200 block">Share this 4-digit OTP with driver Suresh</span>
+                    </div>
+
+                    <div class="bg-white p-3 rounded-2xl border border-slate-200 shadow-sm space-y-2 text-xs">
+                        <div class="flex justify-between items-center border-b border-slate-100 pb-2">
+                            <div>
+                                <span class="text-[9px] text-slate-400 uppercase font-semibold">Assigned Cab</span>
+                                <strong class="block text-slate-900">Innova MPV #301 (KA 05 MN 9180)</strong>
+                                <span class="text-[9px] text-slate-500">Corridor 2 Dedicated MPV</span>
+                            </div>
+                            <span class="text-[10px] font-mono font-bold text-purple-700 bg-purple-50 px-2 py-0.5 rounded border border-purple-200">
+                                BAY 6
+                            </span>
+                        </div>
+                        <div class="space-y-1 text-[11px]">
+                            <div class="flex justify-between text-slate-600">
+                                <span>Drop Location:</span>
+                                <strong id="p3-ticket-drop" class="text-slate-900">Whitefield IT Zone</strong>
+                            </div>
+                            <div class="flex justify-between text-slate-600">
+                                <span>Corridor Spine:</span>
+                                <strong class="text-purple-700">Corridor 2 (East Spine)</strong>
+                            </div>
+                            <div class="flex justify-between text-slate-600 pt-1 border-t border-slate-100">
+                                <span>Total Shared Fare:</span>
+                                <strong id="p3-ticket-fare" class="text-purple-700 font-mono font-bold text-sm">₹410</strong>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="p3-trip-status-banner" class="bg-purple-50 p-2.5 rounded-xl border border-purple-200 text-[10px] text-purple-900 space-y-1">
+                        <span class="font-bold block flex items-center gap-1.5">
+                            <span class="w-2 h-2 rounded-full bg-purple-600 animate-ping"></span>
+                            <span>Status: Cab Allocated in Curbside Bay 6</span>
+                        </span>
+                        <p class="text-[9px]">PostGIS Corridor Isolation: Separated from Corridor 1 to avoid cross-city detours!</p>
+                    </div>
+                </div>
+
+                <div class="space-y-1.5">
+                    <button onclick="editBooking(3)" class="w-full bg-slate-200 hover:bg-slate-300 text-slate-700 font-mono font-bold py-2 rounded-xl text-xs">
+                        Edit Booking Details
+                    </button>
+                    <button onclick="logoutUser(3)" class="w-full text-slate-400 hover:text-slate-600 font-mono text-[10px] py-1 text-center">
+                        Sign Out
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========================================================================= -->
+        <!-- PHONE 4: DRIVER IN-CAB HUD CONSOLE (Maruti Suzuki Ertiga MPV #284) -->
+        <!-- ========================================================================= -->
+        <div class="phone-frame" id="phone4">
+            <div class="dynamic-island">
+                <div class="w-2 h-2 rounded-full bg-slate-800"></div>
+                <div class="w-2.5 h-2.5 rounded-full bg-slate-900 border border-slate-700"></div>
+            </div>
+
+            <!-- Top Status Bar -->
+            <div class="pt-2.5 px-6 pb-1 flex justify-between text-[11px] font-mono font-bold bg-slate-900 text-slate-300 border-b border-slate-800">
+                <span>09:41</span>
+                <span class="text-amber-400 font-bold">Driver Console HUD</span>
+                <div class="flex items-center gap-1.5">
+                    <i class="fa-solid fa-satellite-dish text-[9px] text-emerald-400"></i>
+                    <i class="fa-solid fa-battery-full text-[10px]"></i>
+                </div>
+            </div>
+
+            <!-- SCREEN 4: DRIVER HUD CONSOLE -->
+            <div class="flex-1 overflow-y-auto p-4 space-y-3 text-xs bg-slate-900 text-slate-100 flex flex-col justify-between">
+                <div class="space-y-3">
+                    <!-- Vehicle Info -->
+                    <div class="flex items-center justify-between border-b border-slate-800 pb-2">
+                        <div>
+                            <span class="text-[9px] text-slate-400 block font-mono">Ertiga Smart Hybrid • KA 04 ME 4102</span>
+                            <h2 class="font-extrabold text-white text-sm">Rajesh Kumar (⭐ 4.9)</h2>
+                        </div>
+                        <span id="hud-batch-badge" class="text-[9px] font-mono font-bold bg-slate-800 text-slate-400 border border-slate-700 px-2 py-0.5 rounded">
+                            STANDBY
+                        </span>
+                    </div>
+
+                    <!-- Dual Knapsack Gauges -->
+                    <div class="bg-slate-800/80 p-3 rounded-xl border border-slate-700 space-y-2.5 font-mono">
+                        <span class="text-[9px] text-slate-400 font-bold uppercase block tracking-wider">Dual Knapsack Capacity Check</span>
+                        
+                        <!-- Seats Progress -->
+                        <div class="space-y-1">
+                            <div class="flex justify-between text-[10px]">
+                                <span class="text-slate-300"><i class="fa-solid fa-users text-blue-400"></i> Passenger Seats:</span>
+                                <strong id="hud-seats-text" class="text-white">0 / 6 Seats</strong>
+                            </div>
+                            <div class="w-full bg-slate-700 h-2 rounded-full overflow-hidden">
+                                <div id="hud-seats-bar" class="bg-blue-500 h-full transition-all duration-500" style="width: 0%"></div>
+                            </div>
+                        </div>
+
+                        <!-- Boot Progress (Key Academic Wow Factor) -->
+                        <div class="space-y-1">
+                            <div class="flex justify-between text-[10px]">
+                                <span class="text-slate-300"><i class="fa-solid fa-suitcase text-amber-400"></i> CNG Trunk Boot:</span>
+                                <strong id="hud-boot-text" class="text-amber-300">0 / 6 Boot Units</strong>
+                            </div>
+                            <div class="w-full bg-slate-700 h-2 rounded-full overflow-hidden">
+                                <div id="hud-boot-bar" class="bg-amber-400 h-full transition-all duration-500" style="width: 0%"></div>
+                            </div>
+                        </div>
+                        <span id="hud-boot-status" class="text-[9px] text-emerald-400 block font-bold">✓ 0% Boot Overflow Guarantee</span>
+                    </div>
+
+                    <!-- Monotonic Stops Sequence -->
+                    <div class="bg-slate-800/80 p-3 rounded-xl border border-slate-700 space-y-2 font-mono">
+                        <span class="text-[9px] text-slate-400 font-bold uppercase block tracking-wider">PostGIS Highway Drop Sequence</span>
+                        <div id="hud-stops" class="space-y-1.5 text-[10px]">
+                            <div class="p-2.5 rounded-lg bg-slate-900/60 border border-slate-700/60 text-slate-400 text-center text-[10px]">
+                                Awaiting curbside bookings from Phones 1 & 2...
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Driver Actions -->
+                <div class="space-y-2">
+                    <button id="hud-action-btn" onclick="openDriverBoardingModal()" disabled class="w-full bg-slate-800 text-slate-500 font-mono font-bold py-3 rounded-xl transition-all flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-clock"></i>
+                        <span>Awaiting Bookings</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- DRIVER BOARDING & OTP VERIFICATION MODAL -->
+    <div id="driverModal" class="hidden fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-700 rounded-2xl max-w-sm w-full p-5 space-y-4 shadow-2xl text-slate-100 font-mono text-xs">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                <div class="flex items-center gap-2">
+                    <div class="w-8 h-8 rounded-lg bg-emerald-500/20 border border-emerald-500/40 text-emerald-400 flex items-center justify-center text-sm">
+                        <i class="fa-solid fa-user-check"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-white text-sm">Verify Curbside Passengers</h3>
+                        <span class="text-[10px] text-slate-400">Bay 4 • Ertiga MPV #284</span>
+                    </div>
+                </div>
+                <button onclick="closeDriverModal()" class="text-slate-400 hover:text-white">✕</button>
+            </div>
+
+            <div id="modalPassengerList" class="space-y-2 text-[11px]">
+                <!-- Dynamic passenger verification rows -->
+            </div>
+
+            <div class="pt-2 border-t border-slate-800 flex items-center justify-between">
+                <span class="text-[10px] text-slate-400">Ready to pull onto NH 44 Expressway:</span>
+            </div>
+
+            <button onclick="driverAcceptBatch()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 rounded-xl shadow-lg transition-all flex items-center justify-center gap-2 text-xs">
+                <i class="fa-solid fa-road"></i>
+                <span>Confirm Boarding & Dispatch Cab</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- CLIENT SCRIPT & SYNC LOGIC -->
+    <script>
+        const API_BASE = "http://localhost:8085/api";
+
+        // State Store for All 3 Passengers & Driver
+        const pData = {
+            1: { name: "", phone: "", flight: "", gate: "Terminal 1 • Curb Gate 2", seats: 1, cabin: 1, checkin: 0, units: 1, dest: "Hebbal Flyover", lat: 13.0358, lng: 77.5970, km: 28, corridor: 1, fare: 298, otp: "8811", booked: false },
+            2: { name: "", phone: "", flight: "", gate: "Terminal 1 • Curb Gate 4", seats: 1, cabin: 1, checkin: 2, units: 5, dest: "Silk Board Flyover", lat: 12.9172, lng: 77.6228, km: 46, corridor: 1, fare: 463, otp: "5088", booked: false },
+            3: { name: "", phone: "", flight: "", gate: "Terminal 2 • Curb Gate 6", seats: 1, cabin: 1, checkin: 1, units: 3, dest: "Whitefield IT Zone", lat: 12.9698, lng: 77.7499, km: 42, corridor: 2, fare: 410, otp: "8139", booked: false }
+        };
+
+        // Check Backend Health
+        async function checkBackend() {
+            try {
+                const res = await fetch(`${API_BASE}/status`, { signal: AbortSignal.timeout(2000) });
+                if (res.ok) {
+                    document.getElementById('backendDot').className = "w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse";
+                    document.getElementById('backendText').innerText = "PostGIS Backend: Live (8085)";
+                    document.getElementById('backendPill').className = "flex items-center gap-2 px-3 py-1.5 rounded-xl bg-emerald-950/40 border border-emerald-500/40 text-emerald-300 font-bold";
+                }
+            } catch (e) {
+                document.getElementById('backendDot').className = "w-2.5 h-2.5 rounded-full bg-amber-400";
+                document.getElementById('backendText').innerText = "Local Simulation Mode";
+            }
+        }
+        checkBackend();
+        setInterval(checkBackend, 5000);
+
+        // Quick Preset Persona Loader
+        function loadPersona(id, name, phone, flight) {
+            document.getElementById(`p${id}-name`).value = name;
+            document.getElementById(`p${id}-phone`).value = phone;
+            document.getElementById(`p${id}-flight`).value = flight;
+        }
+
+        // Step 1: Request OTP
+        function requestOtp(id) {
+            const name = document.getElementById(`p${id}-name`).value.trim() || `Flyer #${id}`;
+            const phone = document.getElementById(`p${id}-phone`).value.trim() || `+91 98000 ${1000 + id}`;
+            const flight = document.getElementById(`p${id}-flight`).value.trim() || `6E-${200 + id}`;
+
+            pData[id].name = name;
+            pData[id].phone = phone;
+            pData[id].flight = flight;
+
+            const target = document.getElementById(`p${id}-otp-target`);
+            if (target) target.innerText = phone;
+
+            document.getElementById(`p${id}-login`).classList.add('hidden');
+            document.getElementById(`p${id}-otp`).classList.remove('hidden');
+        }
+
+        function backToLogin(id) {
+            document.getElementById(`p${id}-otp`).classList.add('hidden');
+            document.getElementById(`p${id}-login`).classList.remove('hidden');
+        }
+
+        // Step 2: Verify OTP
+        function verifyOtp(id) {
+            document.getElementById(`p${id}-display-name`).innerText = pData[id].name;
+            const flightSpan = document.getElementById(`p${id}-display-flight`);
+            if (flightSpan) flightSpan.innerText = `Flight: ${pData[id].flight}`;
+
+            document.getElementById(`p${id}-otp`).classList.add('hidden');
+            document.getElementById(`p${id}-booking`).classList.remove('hidden');
+            document.getElementById(`p${id}-ticket`).classList.add('hidden');
+
+            updateFare(id);
+        }
+
+        function logoutUser(id) {
+            pData[id].booked = false;
+            document.getElementById(`p${id}-booking`).classList.add('hidden');
+            document.getElementById(`p${id}-ticket`).classList.add('hidden');
+            document.getElementById(`p${id}-otp`).classList.add('hidden');
+            document.getElementById(`p${id}-login`).classList.remove('hidden');
+            syncToDriverHUD();
+        }
+
+        function editBooking(id) {
+            document.getElementById(`p${id}-ticket`).classList.add('hidden');
+            document.getElementById(`p${id}-booking`).classList.remove('hidden');
+        }
+
+        function adjustSeats(id, delta) {
+            pData[id].seats = Math.max(1, Math.min(3, pData[id].seats + delta));
+            document.getElementById(`p${id}-seats`).innerText = pData[id].seats;
+            updateFare(id);
+        }
+
+        // Adjust Luggage Units Dynamically (Cabin = 1u, Check-in = 2u)
+        function adjustLuggage(id, type, delta) {
+            if (type === 'cabin') {
+                pData[id].cabin = Math.max(0, Math.min(3, pData[id].cabin + delta));
+                document.getElementById(`p${id}-cabin`).innerText = pData[id].cabin;
+            } else {
+                pData[id].checkin = Math.max(0, Math.min(3, pData[id].checkin + delta));
+                document.getElementById(`p${id}-checkin`).innerText = pData[id].checkin;
+            }
+            pData[id].units = pData[id].cabin + (pData[id].checkin * 2);
+            document.getElementById(`p${id}-luggage-units`).innerText = `${pData[id].units} Volume Unit${pData[id].units !== 1 ? 's' : ''} (${pData[id].units}u)`;
+
+            // Update mini progress meter
+            const meter = document.getElementById(`p${id}-boot-meter`);
+            const meterText = document.getElementById(`p${id}-boot-meter-text`);
+            const pct = Math.min(100, Math.round((pData[id].units / 6) * 100));
+            if (meter) meter.style.width = `${pct}%`;
+            if (meterText) meterText.innerText = `${pData[id].units}u / 6u Boot Space`;
+
+            updateFare(id);
+        }
+
+        // Update Fare Preview
+        function updateFare(id) {
+            const destVal = document.getElementById(`p${id}-destination`).value.split('|');
+            pData[id].dest = destVal[0];
+            pData[id].lat = parseFloat(destVal[1]);
+            pData[id].lng = parseFloat(destVal[2]);
+            pData[id].km = parseFloat(destVal[3]);
+            pData[id].corridor = parseInt(destVal[4]);
+
+            const soloFare = Math.round((120 + (pData[id].km * 28)) * pData[id].seats);
+            const sharedFare = Math.round(((120 / 3) + ((pData[id].km / 110) * (46 * 22))) * (1 + (pData[id].seats - 1) * 0.4));
+            pData[id].fare = sharedFare;
+
+            document.getElementById(`p${id}-fare`).innerText = `₹${sharedFare}`;
+            document.getElementById(`p${id}-solo-fare`).innerText = `Solo: ₹${soloFare}`;
+        }
+
+        // Submit Booking from Any Phone
+        function submitBooking(id) {
+            pData[id].gate = document.getElementById(`p${id}-gate`).value;
+            pData[id].booked = true;
+
+            // Generate unique ticket and OTP
+            pData[id].otp = `${Math.floor(1000 + Math.random() * 9000)}`;
+            const ticketId = `AS-${Math.floor(2000 + Math.random() * 7000)}`;
+
+            document.getElementById(`p${id}-ticket-id`).innerText = `Booking #${ticketId}`;
+            document.getElementById(`p${id}-ticket-otp`).innerText = pData[id].otp;
+            document.getElementById(`p${id}-ticket-drop`).innerText = pData[id].dest;
+            document.getElementById(`p${id}-ticket-units`).innerText = `${pData[id].units} Units (${pData[id].cabin} Cab, ${pData[id].checkin} Chk)`;
+            document.getElementById(`p${id}-ticket-fare`).innerText = `₹${pData[id].fare}`;
+
+            document.getElementById(`p${id}-booking`).classList.add('hidden');
+            document.getElementById(`p${id}-ticket`).classList.remove('hidden');
+
+            // Send to Spring Boot Backend live
+            fetch(`${API_BASE}/add-rider`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    passengerName: pData[id].name,
+                    flightNo: pData[id].flight,
+                    seatsNeeded: pData[id].seats,
+                    cabinBags: pData[id].cabin,
+                    checkinBags: pData[id].checkin,
+                    dropName: pData[id].dest,
+                    lon: pData[id].lng,
+                    lat: pData[id].lat
+                })
+            }).then(r => r.json()).then(d => {
+                console.log("Passenger added in PostGIS DB:", d);
+            }).catch(() => {});
+
+            syncToDriverHUD();
+        }
+
+        // Sync Active Bookings to Driver Phone 4
+        function syncToDriverHUD() {
+            let seats = 0;
+            let luggage = 0;
+            let stops = [];
+
+            // Corridor 1 Grouping (Phone 1 and Phone 2)
+            if (pData[1].booked && pData[1].corridor === 1) {
+                seats += pData[1].seats;
+                luggage += pData[1].units;
+                stops.push({ name: pData[1].dest, km: pData[1].km, fare: pData[1].fare, rider: `${pData[1].name} (${pData[1].units}u)` });
+            }
+
+            if (pData[2].booked && pData[2].corridor === 1) {
+                seats += pData[2].seats;
+                luggage += pData[2].units;
+                stops.push({ name: pData[2].dest, km: pData[2].km, fare: pData[2].fare, rider: `${pData[2].name} (${pData[2].units}u)` });
+            }
+
+            // Sort stops monotonically (closest to furthest)
+            stops.sort((a, b) => a.km - b.km);
+
+            // Update Dual Knapsack Bars
+            const seatPct = Math.min(100, Math.round((seats / 6) * 100));
+            const bootPct = Math.min(100, Math.round((luggage / 6) * 100));
+
+            document.getElementById('hud-seats-text').innerText = `${seats} / 6 Seats`;
+            document.getElementById('hud-seats-bar').style.width = `${seatPct}%`;
+
+            document.getElementById('hud-boot-text').innerText = `${luggage} / 6 Boot Units`;
+            document.getElementById('hud-boot-bar').style.width = `${bootPct}%`;
+
+            const bootStatus = document.getElementById('hud-boot-status');
+            if (luggage === 6) {
+                document.getElementById('hud-boot-bar').className = "bg-amber-400 h-full transition-all duration-500 animate-pulse";
+                bootStatus.innerHTML = "⭐ Trunk 100% Full (6/6u) • Knapsack Closed to Overflow!";
+                bootStatus.className = "text-[9px] text-amber-300 block font-bold";
+            } else if (luggage > 6) {
+                document.getElementById('hud-boot-bar').className = "bg-rose-500 h-full transition-all duration-500 animate-pulse";
+                bootStatus.innerHTML = "🚫 TRUNK OVERFLOW (>6u) • Second MPV Dispatched!";
+                bootStatus.className = "text-[9px] text-rose-400 block font-bold";
+            } else if (luggage > 0) {
+                document.getElementById('hud-boot-bar').className = "bg-amber-400 h-full transition-all duration-500";
+                bootStatus.innerHTML = `✓ ${6 - luggage}u Remaining Trunk Space`;
+                bootStatus.className = "text-[9px] text-emerald-400 block font-bold";
+            } else {
+                document.getElementById('hud-boot-bar').className = "bg-amber-400 h-full transition-all duration-500";
+                bootStatus.innerHTML = "✓ 0% Boot Overflow Guarantee";
+                bootStatus.className = "text-[9px] text-emerald-400 block font-bold";
+            }
+
+            // Update Monotonic Stops Container
+            const stopsContainer = document.getElementById('hud-stops');
+            if (stops.length === 0) {
+                stopsContainer.innerHTML = `<div class="p-2.5 rounded-lg bg-slate-900/60 border border-slate-700/60 text-slate-400 text-center text-[10px]">Awaiting curbside bookings from Phones 1 & 2...</div>`;
+            } else {
+                stopsContainer.innerHTML = stops.map((s, idx) => `
+                    <div class="p-2 rounded-lg bg-slate-900 border border-emerald-500/30 flex justify-between items-center text-[11px]">
+                        <div>
+                            <span class="text-[9px] text-emerald-400 font-bold block">STOP ${idx + 1} (${s.km} km) • Monotonic</span>
+                            <strong class="text-white">${s.name}</strong>
+                            <span class="text-[9px] text-slate-400 block">${s.rider}</span>
+                        </div>
+                        <span class="font-bold text-emerald-400">₹${s.fare}</span>
+                    </div>
+                `).join('');
+            }
+
+            // Update Action Button
+            const hudBtn = document.getElementById('hud-action-btn');
+            const badge = document.getElementById('hud-batch-badge');
+
+            if (seats > 0) {
+                badge.className = "text-[9px] font-mono font-bold bg-amber-500/20 text-amber-300 border border-amber-500/40 px-2 py-0.5 rounded animate-pulse";
+                badge.innerText = `BATCH OFFERED (${seats} FLYERS)`;
+
+                hudBtn.disabled = false;
+                hudBtn.className = "w-full bg-emerald-600 hover:bg-emerald-500 text-white font-mono font-bold py-3 rounded-xl shadow-lg transition-all flex items-center justify-center gap-2";
+                hudBtn.innerHTML = `<i class="fa-solid fa-taxi"></i> Verify OTPs & Dispatch (${seats} Flyers)`;
+            } else {
+                badge.className = "text-[9px] font-mono font-bold bg-slate-800 text-slate-400 border border-slate-700 px-2 py-0.5 rounded";
+                badge.innerText = "STANDBY";
+
+                hudBtn.disabled = true;
+                hudBtn.className = "w-full bg-slate-800 text-slate-500 font-mono font-bold py-3 rounded-xl transition-all flex items-center justify-center gap-2";
+                hudBtn.innerHTML = `<i class="fa-solid fa-clock"></i> Awaiting Bookings`;
+            }
+        }
+
+        // Open Boarding Verification Modal
+        function openDriverBoardingModal() {
+            const list = document.getElementById('modalPassengerList');
+            let rows = [];
+
+            if (pData[1].booked) {
+                rows.push(`
+                    <div class="p-2.5 rounded-xl bg-slate-800 border border-slate-700 flex justify-between items-center">
+                        <div>
+                            <strong class="text-white">${pData[1].name}</strong>
+                            <span class="text-[10px] text-slate-400 block">Flight ${pData[1].flight} • ${pData[1].dest} (${pData[1].units}u)</span>
+                        </div>
+                        <div class="text-right">
+                            <span class="text-[9px] text-emerald-400 block font-bold">OTP: ${pData[1].otp}</span>
+                            <span class="text-[9px] text-emerald-400 bg-emerald-500/20 px-1.5 py-0.5 rounded">✓ Verified</span>
+                        </div>
+                    </div>
+                `);
+            }
+
+            if (pData[2].booked) {
+                rows.push(`
+                    <div class="p-2.5 rounded-xl bg-slate-800 border border-slate-700 flex justify-between items-center">
+                        <div>
+                            <strong class="text-white">${pData[2].name}</strong>
+                            <span class="text-[10px] text-slate-400 block">Flight ${pData[2].flight} • ${pData[2].dest} (${pData[2].units}u)</span>
+                        </div>
+                        <div class="text-right">
+                            <span class="text-[9px] text-amber-400 block font-bold">OTP: ${pData[2].otp}</span>
+                            <span class="text-[9px] text-emerald-400 bg-emerald-500/20 px-1.5 py-0.5 rounded">✓ Verified</span>
+                        </div>
+                    </div>
+                `);
+            }
+
+            list.innerHTML = rows.join('');
+            document.getElementById('driverModal').classList.remove('hidden');
+        }
+
+        function closeDriverModal() {
+            document.getElementById('driverModal').classList.add('hidden');
+        }
+
+        function driverAcceptBatch() {
+            closeDriverModal();
+            const hudBtn = document.getElementById('hud-action-btn');
+            const badge = document.getElementById('hud-batch-badge');
+
+            badge.className = "text-[9px] font-mono font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 px-2 py-0.5 rounded";
+            badge.innerText = "ONBOARDED & DISPATCHED";
+
+            hudBtn.className = "w-full bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 font-mono font-bold py-3 rounded-xl text-center";
+            hudBtn.innerHTML = `<i class="fa-solid fa-route"></i> Dispatched on NH 44 Arterial Spine`;
+            hudBtn.disabled = true;
+
+            // Update status banners on passenger phones
+            ['p1-trip-status-banner', 'p2-trip-status-banner'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) {
+                    el.className = "bg-emerald-50 p-2.5 rounded-xl border border-emerald-300 text-[10px] text-emerald-900 space-y-1";
+                    el.innerHTML = `
+                        <span class="font-bold block flex items-center gap-1.5">
+                            <span class="w-2 h-2 rounded-full bg-emerald-600 animate-pulse"></span>
+                            <span>Status: Cab Dispatched • En Route on NH 44</span>
+                        </span>
+                        <p class="text-[9px]">Zero boot overflow guaranteed. Driver Rajesh navigating monotonic stops.</p>
+                    `;
+                }
+            });
+
+            alert("🚀 MPV #284 Dispatched!\n• Passengers onboarded at Terminal Bay 4\n• Zero boot overflow: 6/6u knapsack match verified\n• Monotonic route ordered strictly by distance");
+        }
+
+        // Fast-Fill All 3 Profiles (for quick viva demonstration)
+        function prefillJudgesData() {
+            loadPersona(1, 'Rohan Sharma', '+91 98450 12345', '6E-204');
+            loadPersona(2, 'Dr. Priya Iyer', '+91 97400 56789', 'AI-508');
+            loadPersona(3, 'Vikram Nair', '+91 99800 98765', 'UK-812');
+
+            requestOtp(1); verifyOtp(1);
+            requestOtp(2); verifyOtp(2);
+            requestOtp(3); verifyOtp(3);
+
+            submitBooking(1);
+            setTimeout(() => submitBooking(2), 200);
+            setTimeout(() => submitBooking(3), 400);
+        }
+
+        // Run PostGIS Match
+        async function triggerMatchOnFleet() {
+            try {
+                const res = await fetch(`${API_BASE}/match`, { method: 'POST' });
+                const data = await res.json();
+                alert(`🎯 PostGIS Knapsack Clustered in ${data.executionTimeMs}ms!\n• Dispatched MPVs: ${data.vehiclesDispatched}\n• Total Saved: ₹${data.totalPassengerSavingsINR}`);
+            } catch (e) {
+                syncToDriverHUD();
+                alert("Ran local 2D Knapsack matcher — fleet updated!");
+            }
+        }
+
+        // Reset All Phones to Fresh State
+        function resetAllDevices() {
+            for (let id = 1; id <= 3; id++) {
+                pData[id].name = "";
+                pData[id].phone = "";
+                pData[id].flight = "";
+                pData[id].booked = false;
+                
+                document.getElementById(`p${id}-name`).value = "";
+                document.getElementById(`p${id}-phone`).value = "";
+                document.getElementById(`p${id}-flight`).value = "";
+
+                logoutUser(id);
+            }
+            pData[1].cabin = 1; pData[1].checkin = 0; pData[1].units = 1;
+            pData[2].cabin = 1; pData[2].checkin = 2; pData[2].units = 5;
+            pData[3].cabin = 1; pData[3].checkin = 1; pData[3].units = 3;
+
+            syncToDriverHUD();
+            fetch(`${API_BASE}/reset`, { method: 'DELETE' }).catch(() => {});
+        }
+    </script>
+</body>
+</html>

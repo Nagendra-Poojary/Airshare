@@ -143,10 +143,24 @@
                 </div>
             </div>
 
-            <a href="login.html" class="px-2.5 py-1.5 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 text-xs font-semibold transition-all flex items-center gap-1.5 shadow-xs">
-                <i class="fa-solid fa-arrow-right-to-bracket text-emerald-600 text-[10px]"></i>
-                <span>Sign In</span>
+            <a href="expo-simulator.html" class="px-2.5 py-1.5 rounded-lg bg-indigo-50 hover:bg-indigo-100 text-indigo-800 border border-indigo-200 text-xs font-semibold transition-all flex items-center gap-1.5 shadow-xs">
+                <i class="fa-solid fa-mobile-screen text-indigo-600 text-[10px]"></i>
+                <span>Expo 4-Phone Mode</span>
             </a>
+
+            <div id="authHeaderBlock" class="flex items-center gap-2">
+                <a href="login.html" id="signInNavBtn" class="px-2.5 py-1.5 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 text-xs font-semibold transition-all flex items-center gap-1.5 shadow-xs">
+                    <i class="fa-solid fa-arrow-right-to-bracket text-emerald-600 text-[10px]"></i>
+                    <span>Sign In</span>
+                </a>
+                <div id="userProfileNavPill" class="hidden flex items-center gap-2 bg-emerald-50 border border-emerald-200 px-2.5 py-1 rounded-xl text-xs font-semibold text-slate-800 shadow-xs">
+                    <i class="fa-solid fa-circle-user text-emerald-600"></i>
+                    <span id="userDisplayName">User</span>
+                    <button type="button" onclick="handleUserSignOut()" class="text-slate-400 hover:text-rose-600 text-[10px] ml-1 font-mono" title="Sign Out">
+                        <i class="fa-solid fa-right-from-bracket"></i>
+                    </button>
+                </div>
+            </div>
         </div>
     </header>
 
@@ -404,6 +418,7 @@
             updateLuggageUI();
             updateFarePreview();
             seedDefaultState();
+            checkUserSession();
 
             // Detect role from URL params (e.g. from login.html)
             const urlParams = new URLSearchParams(window.location.search);
@@ -416,6 +431,41 @@
 
             detectUserLocation();
         };
+
+        function checkUserSession() {
+            const urlParams = new URLSearchParams(window.location.search);
+            let userName = urlParams.get('name');
+            let userFlight = urlParams.get('flight');
+            let savedUser = null;
+            try {
+                savedUser = JSON.parse(sessionStorage.getItem('airshare_user') || localStorage.getItem('airshare_user'));
+            } catch (e) {}
+
+            if (savedUser && !userName) {
+                userName = savedUser.name;
+                userFlight = savedUser.flightNo;
+            }
+
+            if (userName) {
+                const signInBtn = document.getElementById('signInNavBtn');
+                if (signInBtn) signInBtn.classList.add('hidden');
+                const pill = document.getElementById('userProfileNavPill');
+                if (pill) {
+                    pill.classList.remove('hidden');
+                    document.getElementById('userDisplayName').innerText = userName;
+                }
+                const passNameInput = document.getElementById('passName');
+                if (passNameInput) passNameInput.value = userName;
+                const passFlightInput = document.getElementById('passFlight');
+                if (passFlightInput && userFlight) passFlightInput.value = userFlight;
+            }
+        }
+
+        function handleUserSignOut() {
+            sessionStorage.removeItem('airshare_user');
+            localStorage.removeItem('airshare_user');
+            window.location.href = 'login.html';
+        }
 
         // AUTO LOCATION FETCHER WITH PERMISSION
         function detectUserLocation(e) {
